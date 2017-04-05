@@ -19,11 +19,9 @@ public class PokerPlayer {
 	public boolean round_active = false;
 	public boolean game_active = false;
 	private HandOfCards myHand;
-	private DeckOfCards deck;
 	
 	PokerPlayer (String name, DeckOfCards deck){
 		player_name = name;
-		this.deck = deck;
 		myHand = new HandOfCards(deck);
 	}
 	
@@ -52,29 +50,6 @@ public class PokerPlayer {
 	
 	//return what kind of hand player has
 	private String checkHand(){
-		String str = "";
-		if(myHand.isRoyalFlush()){
-			str = "Royal Flush";
-		} else if(myHand.isStraightFlush()){
-			str = "Straight Flush";
-		} else if(myHand.isFourOfAKind()){
-			str = "Four of a Kind";
-		} else if(myHand.isFullHouse()){
-			str = "Full House";
-		} else if(myHand.isFlush()){
-			str = "Flush";
-		} else if(myHand.isStraight()){
-			str = "Straight";
-		} else if(myHand.isThreeOfAKind()){
-			str = "Three of a Kind";
-		} else if(myHand.isTwoPair()){
-			str = "Two Pair";
-		} else if(myHand.isOnePair()){
-			str = "One Pair";
-		} else {
-			str = "High Hand";
-		}
-		
-		return str;
+		return myHand.getHandType();
 	}
 }
