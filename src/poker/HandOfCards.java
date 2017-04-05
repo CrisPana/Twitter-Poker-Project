@@ -7,6 +7,7 @@
  * 		Eoghan O'Donnell	14464082
  * 		Crischelle Pana 	14366596
  * 
+ * © 2017 
  * */
 
 package poker;
@@ -192,6 +193,87 @@ public class HandOfCards {
 		} else {
 			return false;
 		}
+	}
+	
+	public int getGameValue(){
+		//returns royal flush default
+		if(isRoyalFlush()) 
+			return ROYAL_FLUSH_DEFAULT;
+		
+		//returns straight default + high card value
+		else if(isStraightFlush()){
+			if(hand.get(0).getGameValue()==14 && hand.get(1).getGameValue()==5)
+				return STRAIGHT_FLUSH_DEFAULT + 5;
+			else 
+				return STRAIGHT_FLUSH_DEFAULT + hand.get(0).getGameValue();
+		}
+		
+		//returns four of a kind default + value of four
+		else if(isFourOfAKind()){
+			if(hand.get(0).getGameValue()==hand.get(1).getGameValue()) 
+				return FOUR_OF_A_KIND_DEFAULT + hand.get(0).getGameValue();
+			else 
+				return FOUR_OF_A_KIND_DEFAULT + hand.get(1).getGameValue();
+		}
+		
+		//returns full house default + value of three
+		else if(isFullHouse()){
+			return FULL_HOUSE_DEFAULT + hand.get(2).getGameValue();
+		}
+		
+		//returns flush default + first * 14^4 + second * 14^3 and so on
+		else if(isFlush()){
+			return FLUSH_DEFAULT + hand.get(0).getGameValue()*FOURTEEN_FOURTH + 
+					hand.get(1).getGameValue()*FOURTEEN_THIRD + hand.get(2).getGameValue()*FOURTEEN_SECOND + 
+					hand.get(3).getGameValue()*FOURTEEN_FIRST + hand.get(4).getGameValue(); 
+		}
+		
+		//returns straight default + value of high card
+		else if(isStraight()){
+			if(hand.get(0).getGameValue()==14 && hand.get(2).getGameValue()==5) 
+				return STRAIGHT_DEFAULT + hand.get(1).getGameValue()*FOURTEEN_FOURTH + 
+						hand.get(2).getGameValue()*FOURTEEN_THIRD + hand.get(3).getGameValue()*FOURTEEN_SECOND + 
+						hand.get(4).getGameValue()*FOURTEEN_FIRST + hand.get(0).getGameValue(); 
+			else 
+				return STRAIGHT_DEFAULT + hand.get(0).getGameValue()*FOURTEEN_FOURTH + 
+						hand.get(1).getGameValue()*FOURTEEN_THIRD + hand.get(2).getGameValue()*FOURTEEN_SECOND + 
+						hand.get(3).getGameValue()*FOURTEEN_FIRST + hand.get(4).getGameValue(); 
+		}
+		
+		//returns three of a kind default + value of three
+		else if(isThreeOfAKind()){
+			return THREE_OF_A_KIND_DEFAULT + hand.get(2).getGameValue();
+		}
+		
+		//returns two pair default + higher pair * 14^2 + lower paid * 14^1 + remaining card value
+		else if(isTwoPair()){
+			if(hand.get(0).getGameValue() == hand.get(1).getGameValue()){
+				if(hand.get(2).getGameValue() == hand.get(3).getGameValue()) 
+					return TWO_PAIR_DEFAULT + hand.get(0).getGameValue()*FOURTEEN_SECOND + hand.get(2).getFaceValue()*FOURTEEN_FIRST + hand.get(4).getGameValue();
+				else 
+					return TWO_PAIR_DEFAULT + hand.get(0).getGameValue()*FOURTEEN_SECOND + hand.get(3).getFaceValue()*FOURTEEN_FIRST + hand.get(2).getGameValue();
+			}
+			else 
+				return TWO_PAIR_DEFAULT + hand.get(1).getGameValue()*FOURTEEN_SECOND + hand.get(3).getFaceValue()*FOURTEEN_FIRST + hand.get(0).getGameValue();
+		}
+		
+		//returns pair + 14^3 + highest card * 14^2 and so on
+		else if(isOnePair()){
+			if(hand.get(0).getGameValue() == hand.get(1).getGameValue()) 
+				return ONE_PAIR_DEFAULT + hand.get(0).getGameValue()*FOURTEEN_THIRD + hand.get(2).getGameValue()*FOURTEEN_SECOND + hand.get(3).getGameValue()*FOURTEEN_FIRST + hand.get(4).getGameValue();
+			else if(hand.get(1).getGameValue() == hand.get(2).getGameValue()) 
+				return ONE_PAIR_DEFAULT + hand.get(1).getGameValue()*FOURTEEN_THIRD + hand.get(0).getGameValue()*FOURTEEN_SECOND + hand.get(3).getGameValue()*FOURTEEN_FIRST + hand.get(4).getGameValue();
+			else if(hand.get(2).getGameValue() == hand.get(3).getGameValue()) 
+				return ONE_PAIR_DEFAULT + hand.get(2).getGameValue()*FOURTEEN_THIRD + hand.get(0).getGameValue()*FOURTEEN_SECOND + hand.get(1).getGameValue()*FOURTEEN_FIRST + hand.get(4).getGameValue();
+			else 
+				return ONE_PAIR_DEFAULT + hand.get(3).getGameValue()*FOURTEEN_THIRD + hand.get(0).getGameValue()*FOURTEEN_SECOND + hand.get(1).getGameValue()*FOURTEEN_FIRST + hand.get(2).getGameValue();
+		}
+		
+		//otherwise returns high hand default + first * 14^4 and so on
+		else 
+			return HIGH_HAND_DEFAULT + hand.get(0).getGameValue()*FOURTEEN_FOURTH + 
+					hand.get(1).getGameValue()*FOURTEEN_THIRD + hand.get(2).getGameValue()*FOURTEEN_SECOND + 
+					hand.get(3).getGameValue()*FOURTEEN_FIRST + hand.get(4).getGameValue(); 
 	}
 	
 	//for testing purposes

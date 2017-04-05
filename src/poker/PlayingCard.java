@@ -7,6 +7,7 @@
  * 		Eoghan O'Donnell	14464082
  * 		Crischelle Pana 	14366596
  * 
+ * © 2017 
  * */
 
 package poker;
