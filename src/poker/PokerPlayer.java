@@ -16,7 +16,8 @@ public class PokerPlayer {
 	
 	public String player_name;
 	public int chips = 10;
-	public boolean active = false;
+	public boolean round_active = false;
+	public boolean game_active = false;
 	private HandOfCards myHand;
 	private DeckOfCards deck;
 	
@@ -36,9 +37,17 @@ public class PokerPlayer {
 	}
 	
 	public void fold(){
-		for(int i = 0; i < myHand.HAND_SIZE; i++) {
-			//deck.returnCard(myHand.hand.get(i));
-		}
+		round_active = false;
+	}
+	
+	public void enterGame(){
+		game_active = true;
+		round_active = true;
+	}
+
+	public void leaveGame(){
+		game_active = true;
+		round_active = true;
 	}
 	
 	//return what kind of hand player has
@@ -67,13 +76,5 @@ public class PokerPlayer {
 		}
 		
 		return str;
-	}
-	
-	public void enterGame(){
-		active = true;
-	}
-
-	public void leaveGame(){
-		active = false;
 	}
 }
