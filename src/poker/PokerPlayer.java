@@ -14,36 +14,66 @@ package poker;
 
 public class PokerPlayer {
 	
-	static public final String player_name = "";
-	public int chips = 0;
+	public String player_name;
+	public int chips = 10;
+	public boolean active = false;
 	private HandOfCards myHand;
+	private DeckOfCards deck;
 	
-	
-	PokerPlayer (DeckOfCards deck){
+	PokerPlayer (String name, DeckOfCards deck){
+		player_name = name;
+		this.deck = deck;
 		myHand = new HandOfCards(deck);
 	}
 	
-	public int diacard(){
+	public int discard(){
+		/*To be implemented*/
 		return 0;
 	}
 	
-	public void check(){
-		//neither raising nor folding
-	}
-	
 	public void raise(int ch){
-		//subtract ch from chips
+		chips -= ch;
 	}
 	
 	public void fold(){
-		//return hand to deck
+		for(int i = 0; i < myHand.HAND_SIZE; i++) {
+			//deck.returnCard(myHand.hand.get(i));
+		}
 	}
 	
-	private void checkHand(){
-		//return what kind of hand player has
+	//return what kind of hand player has
+	private String checkHand(){
+		String str = "";
+		if(myHand.isRoyalFlush()){
+			str = "Royal Flush";
+		} else if(myHand.isStraightFlush()){
+			str = "Straight Flush";
+		} else if(myHand.isFourOfAKind()){
+			str = "Four of a Kind";
+		} else if(myHand.isFullHouse()){
+			str = "Full House";
+		} else if(myHand.isFlush()){
+			str = "Flush";
+		} else if(myHand.isStraight()){
+			str = "Straight";
+		} else if(myHand.isThreeOfAKind()){
+			str = "Three of a Kind";
+		} else if(myHand.isTwoPair()){
+			str = "Two Pair";
+		} else if(myHand.isOnePair()){
+			str = "One Pair";
+		} else {
+			str = "High Hand";
+		}
+		
+		return str;
+	}
+	
+	public void enterGame(){
+		active = true;
 	}
 
 	public void leaveGame(){
-		//player leaves table/game
+		active = false;
 	}
 }
