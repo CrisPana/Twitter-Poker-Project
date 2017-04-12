@@ -7,7 +7,7 @@
  * 		Eoghan O'Donnell	14464082
  * 		Crischelle Pana 	14366596
  * 
- * © 2017 
+ * Â© 2017 
  * */
 
 package poker;
@@ -65,15 +65,11 @@ public class HandOfCards {
 	private boolean containsStraight(){
 		int val = hand.get(0).getFaceValue();
 		
-		if(val == 1 && hand.get(1).getFaceValue() == 13)
-			val = 14;
-		else if(val == 1)
-			val = 6;
+		if(val == 1 && hand.get(1).getFaceValue() == 13) val = 14;
+		else if(val == 1) val = 6;
 		
 		for(int i=1; i<HAND_SIZE; i++){
-			if(hand.get(i).getFaceValue() != val-1 || hand.get(i).getGameValue() != val-1){
-				return false;
-			}
+			if(hand.get(i).getFaceValue() != val-1 || hand.get(i).getGameValue() != val-1) return false;
 			val = hand.get(i).getFaceValue();
 		}
 		return true;
@@ -81,11 +77,11 @@ public class HandOfCards {
 	
 	private boolean containsFlush(){
 		char suit = hand.get(0).getSuit();
+		
 		for(int i = 1; i < HAND_SIZE; i++){
-			if(hand.get(i).getSuit() != suit){
-				return false;
-			}
+			if(hand.get(i).getSuit() != suit) return false;
 		}
+		
 		return true;
 	}
 	
@@ -103,9 +99,8 @@ public class HandOfCards {
 		if (hand.get(0).getFaceValue() == hand.get(3).getFaceValue() || 
 			hand.get(1).getFaceValue() == hand.get(4).getFaceValue()){
 			return true;
-		} else {
-			return false;
-		}
+		} 
+		else return false;
 	}
 	
 	public boolean isFullHouse(){
@@ -114,9 +109,8 @@ public class HandOfCards {
 			(hand.get(0).getFaceValue() == hand.get(1).getFaceValue() && 
 			hand.get(2).getFaceValue() == hand.get(4).getFaceValue())){
 			return true;
-		} else {
-			return false;
-		}
+		} 
+		else return false;
 	}
 	
 	public boolean isFlush(){
@@ -128,15 +122,15 @@ public class HandOfCards {
 	}
 	
 	public boolean isThreeOfAKind(){
-		if(isFourOfAKind() || isFullHouse()){
-			return false;
-		}
+		if(isFourOfAKind() || isFullHouse()) return false;
+		
 		//If hand has at least 3 matching cards, return true
 		if(	(hand.get(0).getFaceValue() == hand.get(2).getFaceValue()) || 
 			(hand.get(1).getFaceValue() == hand.get(3).getFaceValue()) ||
 			(hand.get(2).getFaceValue() == hand.get(4).getFaceValue())){
 			return true && !isFourOfAKind() && !isFullHouse();
 		}
+		
 		//Otherwise, return false
 		return false;
 	}
@@ -144,20 +138,17 @@ public class HandOfCards {
 	//Determines whether hand is a two pair (and not a more valuable hand)
 	public boolean isTwoPair(){
 		//If cards make a higher value hand containing matching cards, return false
-		if(isFourOfAKind() || isFullHouse()){
-			return false;
-		} else if(isThreeOfAKind()){
-			return false;
-		}
+		if(isFourOfAKind() || isFullHouse() || isThreeOfAKind()) return false;
+		
 		//Ensure hand contains at least 2 pairs - if so, return true
 		if(	((hand.get(0).getFaceValue() == hand.get(1).getFaceValue()) && 
 			((hand.get(2).getFaceValue() == hand.get(3).getFaceValue()) ||
 			(hand.get(3).getFaceValue() == hand.get(4).getFaceValue()))) ||
 			((hand.get(1).getFaceValue() == hand.get(2).getFaceValue()) && 
 			((hand.get(3).getFaceValue() == hand.get(4).getFaceValue())))){
-			
 			return true;
 		}
+		
 		//Otherwise, return false
 		return false;
 	}
@@ -165,13 +156,8 @@ public class HandOfCards {
 	//Returns boolean determining if the hand has One pair (and is not a more valuable hand)
 	public boolean isOnePair(){
 		//If cards make a higher value hand containing matching cards, return false
-		if(isFourOfAKind() || isFullHouse()){
-			return false;
-		} else if(isThreeOfAKind()){
-			return false;
-		} else if(isTwoPair()){
-			return false;
-		}
+		if(isFourOfAKind() || isFullHouse() || isThreeOfAKind() || isTwoPair())	return false;
+		
 		//Ensure hand contains at least 2 matching cards - if so, return true
 		if(	(hand.get(0).getFaceValue() == hand.get(1).getFaceValue()) || 
 			(hand.get(1).getFaceValue() == hand.get(2).getFaceValue()) ||
@@ -195,6 +181,163 @@ public class HandOfCards {
 		}
 	}
 	
+	//Determine whether the hand is a busted straight (1 card needed to make a straight)
+		public boolean isBustedStraight(){
+			//Return false for any hand other than high hand, one pair or flush. - All other hands either
+			//contain a straight already, or would require more than 1 card to make a straight
+			if(isHighHand() || isOnePair() || isFlush()){
+				//Get lowest card
+				int min = hand.get(HAND_SIZE-1).getFaceValue();
+				int prev = min;
+				//Amount of 'straight' cards - 1 (including initial lowest card)
+				int straightCards = 1;
+				//For all other cards, if card is less than lowest card + 5, increase straightCards
+				//Check for cards of same value (do not include pairs as 2 cards)
+				for(int i=HAND_SIZE-2; i>=0; i--){
+					if(hand.get(i).getFaceValue()!=prev && hand.get(i).getFaceValue() < min+5){
+						straightCards ++;
+						prev = hand.get(i).getFaceValue();
+					}
+				}
+				//Check if ace can be low
+				if(hand.get(0).getFaceValue()==1 && min ==2) straightCards++;
+				//Return true if 4 of 5 cards are straight cards
+				if(straightCards == 4) return true;
+				
+				//Repeat, but with second lowest card.
+				min = hand.get(HAND_SIZE-2).getFaceValue();
+				prev = min;
+				straightCards = 1;
+				//For all higher cards, if card is less than second lowest card +5, increase straightCards 
+				//Check for cards of same value (do not include pairs as 2 cards) *Use game value for high ace
+				for(int i=HAND_SIZE-3; i>=0; i--){
+					if(hand.get(i).getFaceValue()!=prev && hand.get(i).getGameValue() < min+5){
+						straightCards ++;
+						prev = hand.get(i).getFaceValue();
+					}
+				}
+				//*No need to check ace a second time.
+				//Return true if 4 of 5 cards are straight cards, otherwise return false.
+				if(straightCards == 4){
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+		
+		//Determine whether the hand is a busted flush (1 card needed to make a flush)
+		public boolean isBustedFlush(){
+			//Return false for any hand other than high hand, one pair or straight. - All other hands either
+			//contain a straight already, or would require more than 1 card to make a straight
+			if(isHighHand() || isOnePair() || isStraight()){
+				//Get suit of first card
+				char suitOne = hand.get(0).getSuit();
+				char suitTwo = '\0';
+				//Counters for cards of each suit
+				int suitOneAmount = 1;
+				int suitTwoAmount = 0;
+				
+				//For each card, if card suit is suit one or suit two, increase appropriate counter
+				//If card suit does not equal suit one, and suit two counter is zero, assign this suit
+				//to suit two, and increase counter. If a third suit is discovered, return false.
+				for(int i=1; i<HAND_SIZE; i++){
+					char cardSuit = hand.get(0).getSuit();
+					//Card suit is the same as suit one
+					if(cardSuit==suitOne){
+						suitOneAmount += 1;
+					//Card suit is the same as suit two
+					} else if(suitTwoAmount != 0 && cardSuit==suitTwo){
+						suitTwoAmount += 1;
+					//Card suit is not the same as suit one, and is the second suit discovered
+					} else if(suitTwoAmount == 0){
+						suitTwo = cardSuit;
+						suitTwoAmount += 1;
+					//Card suit is neither suit one nor suit two - return false
+					} else {
+						return false;
+					}
+				}
+				//If there are exactly 4 cards of suit one or two, return true, otherwise return false
+				if(suitOneAmount == 4 || suitTwoAmount == 4){
+					return true;
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+		}
+	
+		//Get card to discard in busted straight
+		private int getBustedStraightCard(){
+			//If not a busted straight, cannot discard any card
+			if(!isBustedStraight()){
+				return -1;
+			}
+			
+			int max, ind;
+			//Get the max card in the hand - assume to be highest card in straight
+			//If straight is an ace low straight, take second highest (after ace) and
+			//start straight from there.
+			if(hand.get(0).getFaceValue() == 1 && hand.get(HAND_SIZE-1).getFaceValue() == 2){
+				max = hand.get(1).getFaceValue();
+				ind = 2;
+				//In ace low straight, ensure the highest card is within range of ace
+				//Otherwise discard that card.
+				if(max > hand.get(0).getFaceValue()+4){
+					return 1;
+				}
+			} else {
+				max = hand.get(0).getGameValue();
+				ind = 1;
+			}
+			int prev = max;
+			int discard = -1;
+			//Check if each card is compatible with straight
+			for(int i=ind; i<HAND_SIZE; i++){
+				//Continue if card is compatible
+				if(hand.get(i).getFaceValue()!=prev && hand.get(i).getFaceValue() > max-5){
+					prev = hand.get(i).getFaceValue();
+				} else {
+					//If card does not make straight, and there is already a discard value,
+					//discard max card (incompatible with at least 2 cards). Otherwise set 
+					//discard value to current card.
+					if(discard != -1){
+						return 0;
+					} else {
+						discard = i;
+					}
+					
+				}
+			}
+			return discard;
+		}
+		
+		//Get card to discard in busted flush
+		private int getBustedFlushCard(){
+			//If not a busted straight, cannot discard any card
+			if(!isBustedFlush()){
+				return -1;
+			}
+			char suit = hand.get(0).getSuit();
+			int unmatched = 0;
+			int discard = -1;
+			for(int i=1; i<HAND_SIZE; i++){
+				if(hand.get(i).getSuit() != suit){
+					discard = i;
+					unmatched++;
+				}
+			}
+			if(unmatched>1){
+				return 0;
+			} else {
+				return discard;
+			}
+		}
+		
 	public int getGameValue(){
 		//returns royal flush default
 		if(isRoyalFlush()) 
@@ -276,6 +419,177 @@ public class HandOfCards {
 					hand.get(3).getGameValue()*FOURTEEN_FIRST + hand.get(4).getGameValue(); 
 	}
 	
+	//Return the discard probability for a card in a high hand
+		private int getDiscardProbHighHand(int cardPos){
+			boolean potentialFlush = isBustedFlush();
+			boolean potentialStraight = isBustedStraight();
+			int cardGameVal = hand.get(cardPos).getGameValue();
+			//Normal High Hand
+			if(!potentialFlush && !potentialStraight){
+				//Discard most cards, but keep valuable cards (like ace, king)
+				return (int) (100 - (Math.pow(cardGameVal, 3) / 28));
+			//Busted flush
+			} else if(potentialFlush){
+				if(cardPos == getBustedFlushCard()){
+					return 100;
+				} else {
+					return 14 - cardGameVal;
+				}
+			//Busted straight
+			} else {
+				if(cardPos == getBustedStraightCard()){
+					return 100;
+				} else {
+					return 40 - cardGameVal;
+				}
+			}
+		}
+		
+		//Return the discard probability for a card in a one pair hand
+		private int getDiscardProbOnePair(int cardPos){
+			boolean potentialFlush = isBustedFlush();
+			boolean potentialStraight = isBustedStraight();
+			int cardGameVal = hand.get(cardPos).getGameValue();
+			//Normal hand
+			if(!potentialFlush && !potentialStraight){
+				//Prioritize discarding any card that is not in the pair
+				if(cardPos+1 < HAND_SIZE && hand.get(cardPos+1).getGameValue() == cardGameVal){
+					return 0;
+				} else if(cardPos-1 >= 0 && hand.get(cardPos-1).getGameValue() == cardGameVal){
+					return 0;
+				} else {
+					//Attempt to make a set/pairs; Can afford to keep higher cards.
+					//Weighted discard (Ace is 0%, 10 is 77%, 7 is 100%)
+					return (int) (100 - (Math.pow(cardGameVal, 4) / 300)) + 10;
+				}
+			//Busted flush
+			} else if(potentialFlush){
+				if(cardPos == getBustedFlushCard()){
+					return 45;
+				} else {
+					return 20 - cardGameVal;
+				}
+			//Busted straight
+			} else {
+				if(cardPos == getBustedStraightCard()){
+					//Better odds if straight card is on end
+					if(cardPos == 0 || cardPos == HAND_SIZE-1){
+						return 40;
+					} else {
+						return 20;
+					}
+				} else {
+					return 20 - cardGameVal;
+				}
+			}
+		}
+		
+		//Return the discard probability for a card in a two pair hand
+		private int getDiscardProbTwoPair(int cardPos){
+			int cardGameVal = hand.get(cardPos).getGameValue();
+			//Prioritize discarding any card that is not in the pair
+			if(cardPos+1 < HAND_SIZE && hand.get(cardPos+1).getGameValue() == cardGameVal){
+				return 0;
+			} else if(cardPos-1 >= 0 && hand.get(cardPos-1).getGameValue() == cardGameVal){
+				return 0;
+			} else {
+				//Attempting to make a full house, still worth keeping high kickers
+				//Ace: 13%, King: 45%, Queen: 70%, Jack: 87%, 10: 100%
+				return (int) (100 - (Math.pow(cardGameVal, 5) / 5000)) + 20;
+			}
+		}
+		
+		//Return the discard probability for a card in a three of a kind hand
+		private int getDiscardProbThreeOfAKind(int cardPos){
+			int cardGameVal = hand.get(cardPos).getGameValue();
+			//Keep all cards in the set
+			if(cardPos+2 < HAND_SIZE && hand.get(cardPos+2).getGameValue() == cardGameVal){
+				return 0;
+			} else if(cardPos-2 >= 0 && hand.get(cardPos-2).getGameValue() == cardGameVal){
+				return 0;
+			} else if(	cardPos-1 >= 0 && cardPos+1 < HAND_SIZE &&
+					hand.get(cardPos-1).getGameValue() == hand.get(cardPos+1).getGameValue()){
+				return 0;
+			} else {
+				//Attempting to make a full house, still worth keeping high kickers
+				//Ace: 13%, King: 45%, Queen: 70%, Jack: 87%, 10: 100%
+				return (int) (100 - (Math.pow(cardGameVal, 5) / 5000)) + 20;
+			}
+		}
+		
+		//Return the discard probability for a card in a straight (0 unless flush can be made)
+		private int getDiscardProbStraight(int cardPos){
+			if(isBustedFlush() && cardPos == getBustedFlushCard()){System.out.println("H");
+				//Return approximate probability of making the flush (about 20%)
+				double p = ((double)(CARD_TYPES-4)/(DECK_SIZE-5)) * 100;
+				return (int) p;
+			} else {
+				return 0;
+			}
+		}
+		
+		//Return the discard probability for a card in a flush
+		private int getDiscardProbFlush(int cardPos){
+			if(isBustedStraight() && cardPos == getBustedStraightCard()){
+				//Return approximate probability of making a straight flush (very low)
+				double p = ((double)1/(DECK_SIZE-5)) * 100;
+				return (int) p;
+			} else {
+				return 0;
+			}
+		}
+		
+		//Return the discard probability for a card in a four of a kind hand
+		private int getDiscardProbFourOfAKind(int cardPos){
+			int cardGameVal = hand.get(cardPos).getGameValue();
+			//Keep all cards in the four of a kind
+			if(cardPos+1 < HAND_SIZE && hand.get(cardPos+1).getGameValue() == cardGameVal){
+				return 0;
+			} else if(cardPos-1 >= 0 && hand.get(cardPos+1).getGameValue() == cardGameVal){
+				return 0;
+			} else {
+				//Discard most cards to bluff, keep higher cards from other players
+				//Ace: 13%, King: 45%, Queen: 70%, Jack: 87%, 10: 80%
+				return (int) (100 - (Math.pow(cardGameVal, 5) / 5000)) + 20;
+			}
+		}
+		
+		//Returns integer representing whether the card should be discarded
+		public int getDiscardProbability(int cardPosition){
+			//Return 0 if cardPosition outside range/card is null
+			if(cardPosition < 0 || cardPosition > HAND_SIZE){
+				return 0;
+			}
+			int discard = 0;
+			if(isHighHand()){
+				discard = getDiscardProbHighHand(cardPosition);
+			} else if(isOnePair()){
+				discard = getDiscardProbOnePair(cardPosition);
+			} else if(isTwoPair()){
+				discard = getDiscardProbTwoPair(cardPosition);
+			} else if(isThreeOfAKind()){
+				discard = getDiscardProbThreeOfAKind(cardPosition);
+			} else if(isStraight()){
+				discard = getDiscardProbStraight(cardPosition);
+			} else if(isFlush()){
+				discard = getDiscardProbFlush(cardPosition);
+			} else if(isFullHouse()){
+				return 0;
+			} else if(isFourOfAKind()){
+				discard = getDiscardProbFourOfAKind(cardPosition);;
+			} else if(isStraightFlush()){
+				return 0;
+			} else {
+				return 0;
+			}
+			if(discard>100){
+				discard = 100;
+			} else if(discard<0){
+				discard = 0;
+			}
+			return discard;
+		}
+		
 	//for testing purposes
 	public String toString(){
 		String output = "";
