@@ -12,6 +12,8 @@
 
 package poker;
 
+import java.util.Random;
+
 public class PokerPlayer {
 	
 	public String player_name;
@@ -25,9 +27,40 @@ public class PokerPlayer {
 		myHand = new HandOfCards(deck);
 	}
 	
+	/*
+	 * method that gets the cards we want to discard
+	 * and we call the discard function in the HandOfCards class to discard them
+	 * */
 	public int discard(){
-		/*To be implemented*/
-		return 0;
+
+		int cardDisProb[] = {-1, -1, -1, -1, -1};
+		
+		//store indices of the cards that we want to dicard
+		//accordigng to discard probability
+		int j = 0;
+		for (int i = 0; i < myHand.HAND_SIZE; i++){
+			Random rand = new Random();
+			int randProb = rand.nextInt(99) + 1;
+//			System.out.println("randProb = " + randProb + " \t card "+i+" discard prob = " + myHand.getDiscardProbability(i));
+			if (myHand.getDiscardProbability(i) >= randProb){
+				cardDisProb[j] = i;
+				j++;
+			}
+		}
+		
+		//return unwanted cards to deck
+		//and only up to three
+		int sizeToDiscard = j;
+		if (j > 3)
+			sizeToDiscard = 3;
+
+		for (int i = 0; i < sizeToDiscard; i++){
+			if (cardDisProb[i] != -1){
+				myHand.discard(cardDisProb[i], sizeToDiscard);
+			}
+		}
+
+		return j;
 	}
 	
 	public void raise(int ch){
