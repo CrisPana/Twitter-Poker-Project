@@ -608,21 +608,8 @@ public class HandOfCards {
 		return discard;
 	}
 	
-	/*
-	 * method that discards cards from the hand
-	 * first argument is the index of cards that we want to discard
-	 * and second one is the limit of the cards we can discard
-	 * then if we're at the last card, discarded everything, 
-	 * we sort the hand
-	 * */
-	public int discard(int index, int limit){
-		
-		deck.returnCard(hand.get(index));
-		hand.set(index, deck.dealNext());
-
-		if (limit == index)
-			sort();
-		
+	public int discard(){
+		//to be implemented
 		return 0;
 	}
 

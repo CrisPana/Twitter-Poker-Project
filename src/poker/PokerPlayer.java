@@ -12,12 +12,10 @@
 
 package poker;
 
-import java.util.Random;
-
-public class PokerPlayer {
+abstract class PokerPlayer {
 	
 	public String player_name;
-	public int chips = 10;
+	public int chips = 100;
 	public boolean round_active = false;
 	public boolean game_active = false;
 	private HandOfCards myHand;
@@ -27,62 +25,33 @@ public class PokerPlayer {
 		myHand = new HandOfCards(deck);
 	}
 	
-	/*
-	 * method that gets the cards we want to discard
-	 * and we call the discard function in the HandOfCards class to discard them
-	 * */
-	public int discard(){
-
-		int cardDisProb[] = {-1, -1, -1, -1, -1};
-		
-		//store indices of the cards that we want to dicard
-		//accordigng to discard probability
-		int j = 0;
-		for (int i = 0; i < myHand.HAND_SIZE; i++){
-			Random rand = new Random();
-			int randProb = rand.nextInt(99) + 1;
-//			System.out.println("randProb = " + randProb + " \t card "+i+" discard prob = " + myHand.getDiscardProbability(i));
-			if (myHand.getDiscardProbability(i) >= randProb){
-				cardDisProb[j] = i;
-				j++;
-			}
-		}
-		
-		//return unwanted cards to deck
-		//and only up to three
-		int sizeToDiscard = j;
-		if (j > 3)
-			sizeToDiscard = 3;
-
-		for (int i = 0; i < sizeToDiscard; i++){
-			if (cardDisProb[i] != -1){
-				myHand.discard(cardDisProb[i], sizeToDiscard);
-			}
-		}
-
-		return j;
-	}
-	
-	public void raise(int ch){
+	private int raise(int ch){
 		chips -= ch;
+		return ch;
 	}
 	
-	public void fold(){
+	private void fold(){
 		round_active = false;
 	}
 	
-	public void enterGame(){
+	public int enterGame(int buyIn){
+		int startingBet = raise(buyIn);
 		game_active = true;
 		round_active = true;
+		
+		return startingBet;
 	}
 
 	public void leaveGame(){
-		game_active = true;
-		round_active = true;
+		game_active = false;
+		round_active = false;
 	}
 	
 	//return what kind of hand player has
 	private String checkHand(){
 		return myHand.getHandType();
 	}
+
+	abstract int action();
+	abstract int discard();
 }
