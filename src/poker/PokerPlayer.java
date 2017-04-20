@@ -16,26 +16,28 @@ abstract class PokerPlayer {
 	
 	public String player_name;
 	public int chips = 100;
+	public int chipsInPot = 0;
 	public boolean round_active = false;
 	public boolean game_active = false;
-	private HandOfCards myHand;
+	protected HandOfCards myHand;
 	
 	PokerPlayer (String name, DeckOfCards deck){
 		player_name = name;
 		myHand = new HandOfCards(deck);
 	}
 	
-	private int raise(int ch){
+	protected int bet(int ch){
 		chips -= ch;
+		chipsInPot += ch;
 		return ch;
 	}
 	
-	private void fold(){
+	protected void fold(){
 		round_active = false;
 	}
 	
 	public int enterGame(int buyIn){
-		int startingBet = raise(buyIn);
+		int startingBet = bet(buyIn);
 		game_active = true;
 		round_active = true;
 		
@@ -52,6 +54,6 @@ abstract class PokerPlayer {
 		return myHand.getHandType();
 	}
 
-	abstract int action();
+	abstract int action(int betAmount, int minimumBet, int blind);
 	abstract int discard();
 }
