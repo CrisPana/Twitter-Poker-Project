@@ -20,7 +20,7 @@ public class HumanPokerPlayer extends PokerPlayer {
 	}
 
 	@Override
-	int action() {
+	int action(int betAmount, int minimumBet, int blind) {
 		// TODO Auto-generated method stub
 		return 0;
 	}
@@ -30,5 +30,7 @@ public class HumanPokerPlayer extends PokerPlayer {
 		// TODO Auto-generated method stub
 		return 0;
 	}
+
+
 
 }

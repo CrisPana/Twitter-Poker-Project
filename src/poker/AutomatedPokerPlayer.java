@@ -32,7 +32,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 	
 	//Determines a betting value based on a blind/ante as a base value, might change to be bet-based
 	private int handBetValue(int blind){
-		int handVal = myHand.getGameValue();
+		int handVal = hand.getGameValue();
 		double mod;
 		if(handVal<HandOfCards.ONE_PAIR_DEFAULT){ //High hand
 			if(handVal < (8*HandOfCards.FOURTEEN_FOURTH)){ //Highest card 7 or lower
@@ -69,10 +69,10 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		
 		//Determine possible bet values
 		int handBetVal = handBetValue(blind);
-		int upperBet = Math.min((int) (handBetVal * upperBetModifier), chips);
-		int lowerBet = Math.min((int) (handBetVal * lowerBetModifier), chips);
+		int upperBet = Math.min((int) (handBetVal * upperBetModifier), getChips());
+		int lowerBet = Math.min((int) (handBetVal * lowerBetModifier), getChips());
 		//Try to save a blind
-		if((chips - upperBet) < blind && (upperBet - blind) > lowerBet){
+		if((getChips() - upperBet) < blind && (upperBet - blind) > lowerBet){
 			upperBet -= blind;
 		}
 		//Decide action
@@ -85,10 +85,10 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 				fold();
 				return 0;
 			}
-		} else if(lowerBet == chips && (handBetVal > betAmount || chips < blind)){ //Forced all-in
+		} else if(lowerBet == getChips() && (handBetVal > betAmount || getChips() < blind)){ //Forced all-in
 			System.out.println(player_name + " all in.");
-			return bet(chips);
-		} else if((upperBet > betAmount + minimumBet) && (chips > toCall + minimumBet)){ //Raise
+			return bet(getChips());
+		} else if((upperBet > betAmount + minimumBet) && (getChips() > toCall + minimumBet)){ //Raise
 			Random rand = new Random();
 			//if((rand.nextDouble() * 100) < bluffChance);
 			int bet = lowerBet + rand.nextInt(upperBet - lowerBet + 1);
@@ -121,6 +121,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		}
 	}
 	
+	
 	//single blind, no pot, 2 player loop for testing (temporary)
 	public static void main(String args[]){
 		DeckOfCards deck = new DeckOfCards();
@@ -128,20 +129,20 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		AutomatedPokerPlayer bot2 = new AutomatedPokerPlayer("Kaiba", deck);
 		bot.enterGame(0);
 		int round = 0;
-		while(bot.chips>0 && bot2.chips>0){
+		while(bot.getChips()>0 && bot2.getChips()>0){
 			bot.round_active = true;
 			bot2.round_active = true;
-			System.out.println(bot.player_name + " " + bot.chips + " - " + bot.myHand + bot.handBetValue(10));
-			System.out.println(bot2.player_name + " " + bot2.chips + " - " + bot2.myHand + bot2.handBetValue(10));
+			System.out.println(bot.player_name + " " + bot.getChips() + " - " + bot.hand + bot.handBetValue(10));
+			System.out.println(bot2.player_name + " " + bot2.getChips() + " - " + bot2.hand + bot2.handBetValue(10));
 			int bet = 10;
 			int min = 10; int blind = 10;
 			
 			round++;
 			//
 			deck.reset();
-			bot.myHand = new HandOfCards(deck);
+			bot.hand = new HandOfCards(deck);
 			bot.round_active = true;
-			bot2.myHand = new HandOfCards(deck);
+			bot2.hand = new HandOfCards(deck);
 			bot2.round_active = true;
 			if(round%2 ==0){
 				System.out.println(bot.player_name + " paid blind.");
@@ -152,7 +153,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 			}
 			while(bot.round_active && bot2.round_active){
 				//
-				System.out.println("to play: " + bot.player_name + "  bank:" + bot.chips + "  bet:" + bet);
+				System.out.println("to play: " + bot.player_name + "  bank:" + bot.getChips() + "  bet:" + bet);
 				int call = bet - bot.chipsInPot;
 				int t = bot.action(bet, min, blind);
 				bet += t - call;
@@ -161,7 +162,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 				if(!bot.round_active || !bot2.round_active){
 					break;
 				}
-				System.out.println("to play: " + bot2.player_name + "  bank:" + bot2.chips + "  bet:" + bet);
+				System.out.println("to play: " + bot2.player_name + "  bank:" + bot2.getChips() + "  bet:" + bet);
 				call = bet - bot2.chipsInPot;
 				t = bot2.action(bet, min, blind);
 				bet += t - call;

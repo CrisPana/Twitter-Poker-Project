@@ -15,15 +15,14 @@ package poker;
 abstract class PokerPlayer {
 	
 	public String player_name;
-	public int chips = 100;
+	private int chips = 100;
 	public int chipsInPot = 0;
 	public boolean round_active = false;
-	public boolean game_active = false;
-	protected HandOfCards myHand;
+	protected HandOfCards hand;
 	
 	PokerPlayer (String name, DeckOfCards deck){
 		player_name = name;
-		myHand = new HandOfCards(deck);
+		hand = new HandOfCards(deck);
 	}
 	
 	protected int bet(int ch){
@@ -38,20 +37,26 @@ abstract class PokerPlayer {
 	
 	public int enterGame(int buyIn){
 		int startingBet = bet(buyIn);
-		game_active = true;
 		round_active = true;
 		
 		return startingBet;
 	}
 
 	public void leaveGame(){
-		game_active = false;
 		round_active = false;
+	}
+	
+	public void leaveRound(){
+		round_active = false;
+	}
+	
+	public int getChips(){
+		return chips;
 	}
 	
 	//return what kind of hand player has
 	private String checkHand(){
-		return myHand.getHandType();
+		return hand.getHandType();
 	}
 
 	abstract int action(int betAmount, int minimumBet, int blind);
