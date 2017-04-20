@@ -70,6 +70,7 @@ public class RoundOfPoker {
 			//PHASE 3 - Betting Round #1
 			int playerStartBet = -1;
 			int betAmount = BIG_BLIND;
+			int minimumBet = BIG_BLIND;
 			
 			//we start betting from the person left of the person with the big blind
 			if (players.size() == 2) playerStartBet = 0;
@@ -77,9 +78,12 @@ public class RoundOfPoker {
 			
 			int temp = 0;
 			for (int i = playerStartBet; i < players.size(); i++) {
-				temp = players.get(i).action();
-				if (temp > betAmount)
-					betAmount = temp;
+				int toCall = betAmount - players.get(i).chipsInPot; //Amount needed for player to call
+				temp = players.get(i).action(betAmount, minimumBet, BIG_BLIND);	//Return chips added to pot
+				pot += temp;
+				betAmount = temp - toCall; //Amount added beyond a call; total amount of chips required for play
+				if ((temp - toCall) > minimumBet)
+					minimumBet = temp;	//Increase minimum bet/raise
 			}
 			
 			
