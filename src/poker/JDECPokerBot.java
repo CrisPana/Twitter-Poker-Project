@@ -26,47 +26,42 @@ import twitter4j.TwitterFactory;
 
 public class JDECPokerBot{
 
-    //if something goes wrong, we might see a TwitterException
+   //if something goes wrong, we might see a TwitterException
     public static void main(String... args) throws TwitterException, InterruptedException{
 
         //access the twitter API using your twitter4j.properties file
         Twitter twitter = TwitterFactory.getSingleton();
 
-//        List<String> searches = new ArrayList<>();
-//        searches.add("\"your welcome\"");
-//        searches.add("\"your the\"");
-//        searches.add("\"your a \"");
-//
-//        List<String> replies = new ArrayList<>();
-//        replies.add( "I believe you meant \"you're\" here?");
-//        replies.add(" I've detected the wrong \"you're\". Destroy!");
-//        replies.add(" No, you are! Seriously. You are. \"You're\".");
+        //a list of searches to look for in twitter
+        List<String> searches = new ArrayList<>();
+        searches.add("\"love live\"");
+        searches.add("\"lovelive\"");
 
-        //keep tweeting forever
+        //a list of replies 
+        List<String> replies = new ArrayList<>();
+        replies.add(" Nico is best girl!");
+
+        //keeps tweeting
         while(true){
 
-//            //create a new search, chosoe from random searches
-//            Query query = new Query(searches.get((int)(searches.size()*Math.random())));
-//
-//            //get the results from that search
-//            QueryResult result = twitter.search(query);
-//
-//            //get the first tweet from those results
-//            Status tweetResult = result.getTweets().get(0);
-//
-//            //reply to that tweet, choose from random replies
-//            StatusUpdate statusUpdate = new StatusUpdate(".@" + tweetResult.getUser().getScreenName() + replies.get((int)(replies.size()*Math.random())));
-//            statusUpdate.inReplyToStatusId(tweetResult.getId());
-//            Status status = twitter.updateStatus(statusUpdate); 
-//
-//            System.out.println("Sleeping.");
-        	 //send a tweet
-            Status status = twitter.updateStatus("Npoker Ipoker Cpoker Opoker");
+            //this creates a new search and it chooses randomly in the list of searches
+            Query query = new Query(searches.get((int)(searches.size()*Math.random())));
 
-            //print a message so we know when it finishes
-            System.out.println("Done.");
+            //get the results from that search
+            QueryResult result = twitter.search(query);
 
-           
+            //get the first tweet from those results
+            Status tweetResult = result.getTweets().get(0);
+
+            //reply to that tweet, choose from random replies
+            StatusUpdate statusUpdate = new StatusUpdate(".@" + tweetResult.getUser().getScreenName() + replies.get((int)(replies.size()*Math.random())));
+            statusUpdate.inReplyToStatusId(tweetResult.getId());
+            Status status = twitter.updateStatus(statusUpdate); 
+
+            System.out.println("Sleeping.");
+
+            //this sends tweets every 5 minutes
+            Thread.sleep(5*60*1000);
         }
     }
 }
