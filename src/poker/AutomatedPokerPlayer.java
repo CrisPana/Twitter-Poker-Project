@@ -7,7 +7,7 @@
  * 		Eoghan O'Donnell	14464082
  * 		Crischelle Pana 	14366596
  * 
- * Â© 2017 
+ * © 2017 
  * */
 
 package poker;
@@ -17,12 +17,30 @@ import java.util.Random;
 public class AutomatedPokerPlayer extends PokerPlayer{
 	
 	static public final int NUMBER_OF_PERSONALITIES = 3;
+	static public final int LOW_BET = 1;			//Standard low bet multiplier (1 times the minimum bet)
+	static public final int MID_BET = 2;			//Standard mid bet multiplier
+	static public final int HIGH_BET = 4;			//Standard high bet multiplier
+	static public final int VALUE_BET_CHANCE = 45;	//Chance to bet standard amounts with very good hands
+	static public final int STEAL_POT_CHANCE = 25;	//Chance to attempt to steal a pot (high bet) with a good hand
+	static public final int BASE_BLUFF_CHANCE = 25;	//Base chance for player to bluff
+	//Blind/Ante/Round values for playable hands (a good high hand is worth a big blind)
+	static public final double LOW_HIGH_HAND_BLIND_VALUE = 0.5;
+	static public final double HIGH_HAND_BLIND_VALUE = 1;
+	static public final double LOW_PAIR_BLIND_VALUE = 1.2;
+	static public final double HIGH_PAIR_BLIND_VALUE = 1.6;
+	static public final double TWO_PAIR_BLIND_VALUE = 2;
+	static public final double SET_BLIND_VALUE = 4;
+	static public final double MIDDLE_BLIND_VALUE = 6;
+	static public final double TOP_BLIND_VALUE = 20;
+	
 	public int discardmodifier;	//parameter to modify discard probability
 	public int bluffChance;		//bot's tendency to bluff
 	public int betmodifier;		//modifies bot's tendency to raise/call
 	public int foldmodifier;	//not sure if this should be a separate value but we can think about it/change it pretty easily
+	private int inRed;			//Number of remaining big blinds/antes the player is comfortable with
 	private double upperBetModifier = 1.2;
 	private double lowerBetModifier = 1.0;
+	
 	AutomatedPokerPlayer(String name, DeckOfCards deck) {
 		super(name, deck);
 		Random rand = new Random();
@@ -30,34 +48,100 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		this.generatePersonality(temp);
 	}
 	
-	//Determines a betting value based on a blind/ante as a base value, might change to be bet-based
+	//Determines a betting value based on a blind/ante as a base value
 	private int handBetValue(int blind){
 		int handVal = hand.getGameValue();
 		double mod;
 		if(handVal<HandOfCards.ONE_PAIR_DEFAULT){ //High hand
-			if(handVal < (8*HandOfCards.FOURTEEN_FOURTH)){ //Highest card 7 or lower
-				mod = 0.25;
-			} else if(handVal < (11*HandOfCards.FOURTEEN_FOURTH)){ //No face cards
-				mod = 0.5;
+			if(handVal < (11*HandOfCards.FOURTEEN_FOURTH)){ //No face cards
+				mod = LOW_HIGH_HAND_BLIND_VALUE;
 			} else { //At least one face card
-				mod = 1;
+				mod = HIGH_HAND_BLIND_VALUE;
 			}
 		} else if(handVal<HandOfCards.TWO_PAIR_DEFAULT){		//One pair
 			if(handVal < (10*HandOfCards.FOURTEEN_THIRD)){		//Pair is lower than 10
-				mod = 1.2;
+				mod = LOW_PAIR_BLIND_VALUE;
 			} else {
-				mod = 1.6;
+				mod = HIGH_PAIR_BLIND_VALUE;
 			}
 		} else if(handVal<HandOfCards.THREE_OF_A_KIND_DEFAULT){	//Two pair
-			mod = 2;
+			mod = TWO_PAIR_BLIND_VALUE;
 		} else if(handVal<HandOfCards.STRAIGHT_DEFAULT){		//Three of a kind
-			mod = 4;
+			mod = SET_BLIND_VALUE;
 		} else if(handVal<HandOfCards.FOUR_OF_A_KIND_DEFAULT){	//Full house, straight, flush
-			mod = 6;
+			mod = MIDDLE_BLIND_VALUE;
 		} else { //Four of a kind, straight flush, royal flush
-			mod = 20;
+			mod = TOP_BLIND_VALUE;
 		}
 		return (int) (blind * mod);
+	}
+	
+	//Returns a bet value using a multiplier for the minimum bet. 
+	private int getBettingChips(int toCall, int minimumBet, int blind, int betMult){
+		int available = getChips() - toCall;		//Available betting chips
+		int minBet = Math.max(minimumBet, blind/2);	//Lowest bet is big blind
+		int base = minBet * betMult;				//Base bet
+		
+		//Try to save blinds in case round is lost
+		for(int i=0; i<inRed && available > base && available-blind> minBet; i++){
+			available -= blind;
+		}
+		
+		//Bet range
+		int lowerBet = (int) (base * lowerBetModifier);
+		int upperBet = (int) (base * upperBetModifier);
+		if(upperBet < available){			//Full bet range
+			Random rand = new Random();
+			return lowerBet + rand.nextInt(upperBet - lowerBet + 1);
+		} else if(lowerBet < available){	//Limited bet range
+			Random rand = new Random();
+			return lowerBet + rand.nextInt(available - lowerBet + 1);
+		} else { //Not enough chips for a full bet, return available betting chips.
+			return available;
+		}
+	}
+	
+	//Return a value to bet/raise by - can be zero if bluffing a low hand.
+	private int decideBetValue(int toCall, int handVal, int betAmount, int minimumBet, int blind){
+		int available = getChips() - toCall; //Available chips
+		int remainingBlinds = toCall / blind;
+		//Random value for decisions
+		Random rand = new Random();
+		int r = (int) (rand.nextDouble() * 100);
+		
+		if(handVal<3*betAmount){//Low hand value - low bet, high bluff, low bluff
+			if(r<bluffChance){	//Bluff - 50% for a high hand bluff, 50% for low hand bluff
+				if(rand.nextInt(2)==0){
+					return 0;
+				} else {
+					return getBettingChips(toCall, minimumBet, blind, MID_BET);
+				}
+			} else { 			//Low bet
+				return getBettingChips(toCall, minimumBet, blind, LOW_BET);
+			}
+		} if(handVal<5*betAmount){//Medium hand value - medium sized bet or a lower hand bluff
+			if(r<bluffChance){	//Bluff - Bluff a lower hand with a low bet or call
+				if(rand.nextInt(2)==0){
+					return 0;
+				} else {
+					return getBettingChips(toCall, minimumBet, blind, LOW_BET);
+				}
+			} else { 			//Mid bet
+				return getBettingChips(toCall, minimumBet, blind, MID_BET);
+			}
+		} else {//High hand value - disguise hand, value-bet or steal pot
+			if(r<bluffChance){	//Bluff a low hand
+				return 0;
+			} else if(r<STEAL_POT_CHANCE+bluffChance && remainingBlinds > inRed){ //Try to steal pot
+				return getBettingChips(toCall, minimumBet, blind, HIGH_BET);
+			} else { //Value bet - a mid bet or low bet, possibly all-in.
+				if(available >= MID_BET*minimumBet*lowerBetModifier){
+					return getBettingChips(toCall, minimumBet, blind, MID_BET);
+				} else {
+					return getBettingChips(toCall, minimumBet, blind, LOW_BET);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -65,35 +149,45 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		if(!round_active) return 0; //Player has folded
 		
 		boolean canCheck = betAmount==chipsInPot;	//Can player check?
-		int toCall = betAmount - chipsInPot;
+		int toCall = betAmount - chipsInPot;		//Amount needed to call
 		
-		//Determine possible bet values
+		//Determine the hand value ranged (based on player's modifiers)
 		int handBetVal = handBetValue(blind);
-		int upperBet = Math.min((int) (handBetVal * upperBetModifier), getChips());
-		int lowerBet = Math.min((int) (handBetVal * lowerBetModifier), getChips());
-		//Try to save a blind
-		if((getChips() - upperBet) < blind && (upperBet - blind) > lowerBet){
-			upperBet -= blind;
-		}
+		int upperVal = (int) (handBetVal * upperBetModifier);
+		int lowerVal = Math.min((int) (handBetVal * lowerBetModifier), getChips());
+		
 		//Decide action
-		if(upperBet < toCall){ //Hand not good enough, check or fold
-			if(canCheck){
-				System.out.println(player_name + " checked.");
-				return bet(0);
-			} else {
-				System.out.println(player_name + " folded.");
-				fold();
-				return 0;
+		if(upperVal < toCall){ //Hand not good enough, bluff, check or fold
+			Random rand = new Random();
+			int r = (int) (rand.nextDouble() * 100);
+			if(r<bluffChance){
+				r = rand.nextInt(2);
+				if(r==0){
+					return toCall + getBettingChips(toCall, minimumBet, blind, MID_BET);
+				} else {
+					return toCall + getBettingChips(toCall, minimumBet, blind, MID_BET);
+				}
+			} else {	//Check or fold
+				if(canCheck){
+					System.out.println(player_name + " checked.");
+					return bet(0);
+				} else {
+					System.out.println(player_name + " folded.");
+					fold();
+					return 0;
+				}
 			}
-		} else if(lowerBet == getChips() && (handBetVal > betAmount || getChips() < blind)){ //Forced all-in
+		} else if(lowerVal == getChips() && (handBetVal > betAmount || getChips() < blind)){ //Forced all-in
 			System.out.println(player_name + " all in.");
 			return bet(getChips());
-		} else if((upperBet > betAmount + minimumBet) && (getChips() > toCall + minimumBet)){ //Raise
+		} else if((upperVal > betAmount + minimumBet) && (getChips() > toCall + minimumBet)){ //Raise
+			//Generate the player's value of their hand
 			Random rand = new Random();
-			//if((rand.nextDouble() * 100) < bluffChance);
-			int bet = lowerBet + rand.nextInt(upperBet - lowerBet + 1);
-			System.out.println(player_name + " raised to " + bet);
-			return bet(bet);
+			int handVal = lowerVal + rand.nextInt(upperVal - lowerVal + 1);
+			//Get bet/raise amount
+			int bet = decideBetValue(toCall, handVal, betAmount, minimumBet, blind);
+			System.out.println(player_name + " raised by " + bet);
+			return bet(bet+toCall);
 		} else { //Call
 			if(toCall == 0) {System.out.println(player_name + " checked.");}
 			else {System.out.println(player_name + " called.");}
@@ -110,11 +204,12 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 	void generatePersonality(int t){
 		switch(t){
 		case 0:
-			discardmodifier=-2; //not sure how to do this. we could have the discard function do different things
-								//for a range of small ints (e.g. -3->3) or just multiply/add/both a value (e.g. add 20)
-			bluffChance=20;		//this could just be the bot's chance to bluff with a bad hand
-			foldmodifier=-1;	//same as the rest. we need to figure out the best way of doing this.	
-			upperBetModifier = 1.2;	//This means the bot would bet between 1 and 1.2 times the expected bet value.
+			discardmodifier=-2; 		//not sure how to do this. we could have the discard function do different things
+										//for a range of small ints (e.g. -3->3) or just multiply/add/both a value (e.g. add 20)
+			bluffChance=20 + BASE_BLUFF_CHANCE;		//this could just be the bot's chance to bluff with a bad hand
+			foldmodifier=-1;			//same as the rest. we need to figure out the best way of doing this.	
+			inRed = 2;
+			upperBetModifier = 1.2;		//This means the bot would bet between 1 and 1.2 times the expected bet value.
 			lowerBetModifier = 1;
 		case 1:
 		case 2:
@@ -124,6 +219,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 	
 	//single blind, no pot, 2 player loop for testing (temporary)
 	public static void main(String args[]){
+		System.out.println("TEST RUN");
 		DeckOfCards deck = new DeckOfCards();
 		AutomatedPokerPlayer bot = new AutomatedPokerPlayer("Yugi", deck);
 		AutomatedPokerPlayer bot2 = new AutomatedPokerPlayer("Kaiba", deck);
@@ -132,8 +228,6 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		while(bot.getChips()>0 && bot2.getChips()>0){
 			bot.round_active = true;
 			bot2.round_active = true;
-			System.out.println(bot.player_name + " " + bot.getChips() + " - " + bot.hand + bot.handBetValue(10));
-			System.out.println(bot2.player_name + " " + bot2.getChips() + " - " + bot2.hand + bot2.handBetValue(10));
 			int bet = 10;
 			int min = 10; int blind = 10;
 			
@@ -144,6 +238,10 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 			bot.round_active = true;
 			bot2.hand = new HandOfCards(deck);
 			bot2.round_active = true;
+			
+			System.out.println(bot.player_name + " " + bot.getChips() + " - " + bot.hand + bot.handBetValue(10));
+			System.out.println(bot2.player_name + " " + bot2.getChips() + " - " + bot2.hand + bot2.handBetValue(10));
+			
 			if(round%2 ==0){
 				System.out.println(bot.player_name + " paid blind.");
 				bot.bet(blind);
@@ -174,5 +272,24 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 			bot.chipsInPot = 0; 
 			bot2.chipsInPot = 0;
 		}
+		
+		bot = new AutomatedPokerPlayer("Yugi", deck);
+		int bet = bot.getBettingChips(10, 10, 10, LOW_BET);
+		bot.bet(bet);
+		System.out.println(bet);
+		
+		bet = bot.getBettingChips(10, 10, 10, MID_BET);
+		bot.bet(bet);
+		System.out.println(bet);
+		
+		bet = bot.getBettingChips(10, 10, 10, HIGH_BET);
+		bot.bet(bet);
+		System.out.println(bet);
+		
+		bet = bot.getBettingChips(0, 10, 10, HIGH_BET);
+		bot.bet(bet);
+		System.out.println(bet);
+		
+		System.out.println(bot.getChips());
 	}
 }
