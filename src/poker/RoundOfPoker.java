@@ -12,6 +12,7 @@
 
 package poker;
 
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -42,18 +43,11 @@ public class RoundOfPoker {
 		//5. Betting Round #2 - left of dealer
 		//6. Showdown
 
-	public RoundOfPoker(DeckOfCards deck) {
-		int numPlayers = 1 + (int)(Math.random() * 4); ; 
-		for(int i = 0; i < numPlayers; i++)
-			players.add(new AutomatedPokerPlayer("John", deck));
+	public RoundOfPoker(DeckOfCards deck, ArrayList<PokerPlayer> players) {
+		this.players = players;
 	}
 	
-	public void addPlayer(HumanPokerPlayer player){
-		players.add(player);
-		Collections.shuffle(players);	//shuffle players around the 'table'
-	}
-	
-	public boolean startGame() {
+	public boolean startRound() {
 		boolean roundFinished = false;
 		dealerLocation++;
 			

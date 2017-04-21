@@ -17,6 +17,7 @@ abstract class PokerPlayer {
 	public String player_name;
 	private int chips = 100;
 	public int chipsInPot = 0;
+	protected boolean isBot;
 	public boolean round_active = false;
 	protected HandOfCards hand;
 	
@@ -59,6 +60,9 @@ abstract class PokerPlayer {
 		return hand.getHandType();
 	}
 
+	public boolean isBot(){
+		return isBot;
+	}
 	abstract int action(int betAmount, int minimumBet, int blind);
 	abstract int discard();
 }

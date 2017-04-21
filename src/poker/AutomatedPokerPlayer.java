@@ -46,6 +46,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		Random rand = new Random();
 		int temp = rand.nextInt(NUMBER_OF_PERSONALITIES);
 		this.generatePersonality(temp);
+		isBot = true;
 	}
 	
 	//Determines a betting value based on a blind/ante as a base value

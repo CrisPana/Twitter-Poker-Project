@@ -16,6 +16,7 @@ public class HumanPokerPlayer extends PokerPlayer {
 
 	HumanPokerPlayer(String name, DeckOfCards deck) {
 		super(name, deck);
+		isBot = false;
 		// TODO Auto-generated constructor stub
 	}
 
