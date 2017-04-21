@@ -573,7 +573,7 @@ public class HandOfCards {
 		// Keep all cards in the four of a kind
 		if (cardPos + 1 < HAND_SIZE && hand.get(cardPos + 1).getGameValue() == cardGameVal)
 			return 0;
-		else if (cardPos - 1 >= 0 && hand.get(cardPos + 1).getGameValue() == cardGameVal)
+		else if (cardPos - 1 >= 0 && hand.get(cardPos - 1).getGameValue() == cardGameVal)
 			return 0;
 		else {
 			// Discard most cards to bluff, keep higher cards from other players
@@ -608,9 +608,14 @@ public class HandOfCards {
 		return discard;
 	}
 	
-	public int discard(){
-		//to be implemented
-		return 0;
+	//Returns a card at an index to the deck, and deals a new card.
+	public void discard(int index){
+		//Return card
+		deck.returnCard(hand.get(index));
+		hand.remove(index);
+		//Deal new card
+		hand.add(deck.dealNext());
+		sort();
 	}
 
 	// for testing purposes

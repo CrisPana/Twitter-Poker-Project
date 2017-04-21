@@ -17,26 +17,29 @@ import java.util.Random;
 public class AutomatedPokerPlayer extends PokerPlayer{
 	
 	static public final int NUMBER_OF_PERSONALITIES = 3;
-	static public final int LOW_BET = 1;			//Standard low bet multiplier (1 times the minimum bet)
-	static public final int MID_BET = 2;			//Standard mid bet multiplier
-	static public final int HIGH_BET = 4;			//Standard high bet multiplier
-	static public final int VALUE_BET_CHANCE = 45;	//Chance to bet standard amounts with very good hands
-	static public final int STEAL_POT_CHANCE = 25;	//Chance to attempt to steal a pot (high bet) with a good hand
-	static public final int BASE_BLUFF_CHANCE = 25;	//Base chance for player to bluff
+	static private final int LOW_BET = 1;			//Standard low bet multiplier (1 times the minimum bet)
+	static private final int MID_BET = 2;			//Standard mid bet multiplier
+	static private final int HIGH_BET = 4;			//Standard high bet multiplier
+	static private final int STEAL_POT_CHANCE = 25;	//Chance to attempt to steal a pot (high bet) with a good hand
+	static private final int BASE_BLUFF_CHANCE = 25;//Base chance for player to bluff
 	//Blind/Ante/Round values for playable hands (a good high hand is worth a big blind)
-	static public final double LOW_HIGH_HAND_BLIND_VALUE = 0.5;
-	static public final double HIGH_HAND_BLIND_VALUE = 1;
-	static public final double LOW_PAIR_BLIND_VALUE = 1.2;
-	static public final double HIGH_PAIR_BLIND_VALUE = 1.6;
-	static public final double TWO_PAIR_BLIND_VALUE = 2;
-	static public final double SET_BLIND_VALUE = 4;
-	static public final double MIDDLE_BLIND_VALUE = 6;
-	static public final double TOP_BLIND_VALUE = 20;
+	static private final double LOW_HIGH_HAND_BLIND_VALUE = 0.5;
+	static private final double HIGH_HAND_BLIND_VALUE = 1;
+	static private final double LOW_PAIR_BLIND_VALUE = 1.2;
+	static private final double HIGH_PAIR_BLIND_VALUE = 1.6;
+	static private final double TWO_PAIR_BLIND_VALUE = 2;
+	static private final double SET_BLIND_VALUE = 4;
+	static private final double MIDDLE_BLIND_VALUE = 6;
+	static private final double TOP_BLIND_VALUE = 20;
+	//Discard Values
+	static public final int MAX_DISCARD = 3;
+	static private final int MINIMUM_DISCARD_CHANCE = 0;
+	static private final int MAXIMUM_DISCARD_CHANCE = 100;
 	
-	public int discardmodifier;	//parameter to modify discard probability
 	public int bluffChance;		//bot's tendency to bluff
 	public int betmodifier;		//modifies bot's tendency to raise/call
 	public int foldmodifier;	//not sure if this should be a separate value but we can think about it/change it pretty easily
+	private int discardModifier;//Lower limit for discarding cards (only discard cards that return higher probability)
 	private int inRed;			//Number of remaining big blinds/antes the player is comfortable with
 	private double upperBetModifier = 1.2;
 	private double lowerBetModifier = 1.0;
@@ -198,18 +201,37 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 
 	@Override
 	int discard() {
-		// TODO Auto-generated method stub
-		return 0;
+		//Amount of cards to be discarded
+		int discarded = 0;
+		
+		//Get the discard value to decide which cards to discard:
+		Random rand = new Random();
+		int minChance = MINIMUM_DISCARD_CHANCE + discardModifier;
+		int random = minChance + rand.nextInt(MAXIMUM_DISCARD_CHANCE - minChance);
+		
+		//Discard cards, but no more than MAX_DISCARD (3)
+		for(int i=0; i<HandOfCards.HAND_SIZE && discarded<MAX_DISCARD; i++){
+			int discardProb = hand.getDiscardProbability(i);
+			//Discard if random < probability
+			if(random<discardProb){
+				hand.discard(i);
+				discarded++;
+			}
+		}
+		
+		//Return amount of cards discarded
+		return discarded;
 	}
 	
 	void generatePersonality(int t){
 		switch(t){
 		case 0:
-			discardmodifier=-2; 		//not sure how to do this. we could have the discard function do different things
-										//for a range of small ints (e.g. -3->3) or just multiply/add/both a value (e.g. add 20)
-			bluffChance=20 + BASE_BLUFF_CHANCE;		//this could just be the bot's chance to bluff with a bad hand
+			//discardmodifier=-2; 		//not sure how to do this. we could have the discard function do different things
+			//							//for a range of small ints (e.g. -3->3) or just multiply/add/both a value (e.g. add 20)
+			bluffChance=10 + BASE_BLUFF_CHANCE;		//this could just be the bot's chance to bluff with a bad hand
 			foldmodifier=-1;			//same as the rest. we need to figure out the best way of doing this.	
-			inRed = 2;
+			discardModifier = 10;		//Lower limit for discarding cards
+			inRed = 2;					//The number of big blinds the player tries to preserve when playing a hand
 			upperBetModifier = 1.2;		//This means the bot would bet between 1 and 1.2 times the expected bet value.
 			lowerBetModifier = 1;
 		case 1:
@@ -292,5 +314,13 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		System.out.println(bet);
 		
 		System.out.println(bot.getChips());
+		
+		System.out.println("\n" + bot.hand);
+		bot.discard();
+		System.out.println("\n" + bot.hand);
+		for(int i=0; i<100; i++){
+			bot.discard();
+		}
+		System.out.println("\n" + bot.hand);
 	}
 }
