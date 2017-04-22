@@ -13,16 +13,49 @@
 
 package poker;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-
 import twitter4j.*;
+import twitter4j.conf.ConfigurationBuilder;
 
 public class JDECPokerBot {
 
 	//access the twitter API using your twitter4j.properties file
-	Twitter twitter = TwitterFactory.getSingleton();
+	Twitter twitter;
 	List<Status> games;
+	
+	public JDECPokerBot() throws TwitterException, FileNotFoundException, IOException {	
+
+		//getting keys from file
+		String[] keys = new String[4];
+		int i = 0;
+		File file = new File("keys.txt");
+		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+			String line;
+			while((line = br.readLine()) != null){
+				keys[i] = line;
+				i++;
+			}	
+		}
+		
+		//configuration and authentication
+		
+		ConfigurationBuilder cb = new ConfigurationBuilder();
+		cb.setDebugEnabled(true);
+		cb.setOAuthConsumerKey(keys[0]);
+		cb.setOAuthConsumerSecret(keys[1]);
+		cb.setOAuthAccessToken(keys[2]);
+		cb.setOAuthAccessTokenSecret(keys[3]);
+		
+		TwitterFactory tf = new TwitterFactory(cb.build());
+		twitter = tf.getInstance();
+	}
 	
     //search for a game
     public int searchForGame() throws TwitterException {
@@ -40,17 +73,19 @@ public class JDECPokerBot {
     }
     
     public int replyToTweet() throws TwitterException, InterruptedException {
+    	//testing for now
     	Status tweetResult = games.get(0);
-    	StatusUpdate statusUpdate = new StatusUpdate(".@" + tweetResult.getUser().getScreenName() + "Starting poker game with JDEC");
+    	StatusUpdate statusUpdate = new StatusUpdate("@" + tweetResult.getUser().getScreenName() + " Starting poker game with JDEC");
+    	
     	statusUpdate.inReplyToStatusId(tweetResult.getId());
     	twitter.updateStatus(statusUpdate); 
-    	
-    	Thread.sleep(5*60*1000);
+
+    	//Thread.sleep(5*60*1000);
     	return 0;
     }
 	
    //if something goes wrong, we might see a TwitterException
-    public static void main(String... args) throws TwitterException, InterruptedException{
+    public static void main(String... args) throws TwitterException, InterruptedException, FileNotFoundException, IOException{
 
 //        //a list of searches to look for in twitter
 //        List<String> searches = new ArrayList<>();
@@ -89,6 +124,7 @@ public class JDECPokerBot {
     	
     	if (newGame.searchForGame() > 0){
     		newGame.replyToTweet();
+    		System.out.println("Found game.");
     	} else {
     		System.out.println("No games found.");
     	}

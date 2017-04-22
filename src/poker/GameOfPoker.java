@@ -12,6 +12,8 @@
 
 package poker;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -20,14 +22,15 @@ import twitter4j.TwitterException;
 public class GameOfPoker {
 
 	private DeckOfCards deck;
-	public JDECPokerBot pokerGame = new JDECPokerBot();
+	public JDECPokerBot pokerGame;
 	public RoundOfPoker round;
 	public ArrayList<PokerPlayer> players = new ArrayList<PokerPlayer>();
 	public HumanPokerPlayer human;
 
-	public GameOfPoker() throws TwitterException {
-		int noOfGame = 0;
+	public GameOfPoker() throws TwitterException, FileNotFoundException, IOException{
+		pokerGame = new JDECPokerBot();
 		
+		int noOfGame = 0;
 		while (noOfGame <= 0){
 			noOfGame = pokerGame.searchForGame();
 		}
@@ -43,7 +46,7 @@ public class GameOfPoker {
 		round = new RoundOfPoker(deck, players);
 	}
 	
-	public static void main(String[] args) throws TwitterException, InterruptedException {
+	public static void main(String[] args) throws TwitterException, InterruptedException, FileNotFoundException, IOException {
 		
 		//testing - temp
 		GameOfPoker game = new GameOfPoker();
