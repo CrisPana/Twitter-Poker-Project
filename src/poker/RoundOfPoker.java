@@ -76,7 +76,7 @@ public class RoundOfPoker {
 			int temp = acting.action(betAmount, minimumBet, blind);
 			pot += temp;
 			betAmount += temp - toCall;
-			if ((temp - toCall) >= minimumBet){
+			if ((temp - toCall) > minimumBet){
 				minimumBet = temp - toCall;
 				lastToBet = playerToAct;
 			}
