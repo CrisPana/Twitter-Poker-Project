@@ -12,17 +12,39 @@
 
 package poker;
 
-public class HumanPokerPlayer extends PokerPlayer {
+import twitter4j.User;
 
-	HumanPokerPlayer(String name, DeckOfCards deck) {
+//import twitter4j.*;
+
+public class HumanPokerPlayer extends PokerPlayer {
+	
+	User user;
+	TwitterStream twitter;
+
+	HumanPokerPlayer(String name, DeckOfCards deck, User twitterUser) {
 		super(name, deck);
 		isBot = false;
-		// TODO Auto-generated constructor stub
+		user = twitterUser;
+		
 	}
 
 	@Override
 	int action(int betAmount, int minimumBet, int blind) {
-		// TODO Auto-generated method stub
+		int toCall = betAmount - getChipsInPot();
+		
+		String actionMessage = user + "'s turn to act. Blinds are  " + blind + "/" + (blind/2) + ". ";
+		actionMessage += "Current bet is " + betAmount + ". ";
+		if(toCall > 0){
+			actionMessage += "You need " + toCall + " to call.";
+		}
+		
+		twitter.addToTweet(actionMessage);
+		twitter.completeMessage();
+		
+		//Parse response
+		//TO DO
+		twitter.parseResponse();
+		
 		return 0;
 	}
 

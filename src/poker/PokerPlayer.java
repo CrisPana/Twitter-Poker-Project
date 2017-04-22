@@ -16,7 +16,7 @@ abstract class PokerPlayer {
 	
 	public String player_name;
 	private int chips = 100;
-	public int chipsInPot = 0;
+	private int chipsInPot = 0;
 	protected boolean isBot;
 	public boolean round_active = false;
 	protected HandOfCards hand;
@@ -53,6 +53,14 @@ abstract class PokerPlayer {
 	
 	public int getChips(){
 		return chips;
+	}
+	
+	public int getChipsInPot(){
+		return chipsInPot;
+	}
+	
+	public void resetChipsInPot(){
+		chipsInPot = 0;
 	}
 	
 	//return what kind of hand player has

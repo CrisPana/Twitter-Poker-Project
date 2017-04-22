@@ -152,8 +152,8 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 	int action(int betAmount, int minimumBet, int blind) { //Print statements are temporary for testing
 		if(!round_active) return 0; //Player has folded
 		
-		boolean canCheck = betAmount==chipsInPot;	//Can player check?
-		int toCall = betAmount - chipsInPot;		//Amount needed to call
+		boolean canCheck = betAmount==getChipsInPot();	//Can player check?
+		int toCall = betAmount - getChipsInPot();		//Amount needed to call
 		
 		//Determine the hand value ranged (based on player's modifiers)
 		int handBetVal = handBetValue(blind);
@@ -173,16 +173,13 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 				}
 			} else {	//Check or fold
 				if(canCheck){
-					System.out.println(player_name + " checked.");
 					return bet(0);
 				} else {
-					System.out.println(player_name + " folded.");
 					fold();
 					return 0;
 				}
 			}
 		} else if(lowerVal == getChips() && (handBetVal > betAmount || getChips() < blind)){ //Forced all-in
-			System.out.println(player_name + " all in.");
 			return bet(getChips());
 		} else if((upperVal > betAmount + minimumBet) && (getChips() > toCall + minimumBet)){ //Raise
 			//Generate the player's value of their hand
@@ -190,11 +187,8 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 			int handVal = lowerVal + rand.nextInt(upperVal - lowerVal + 1);
 			//Get bet/raise amount
 			int bet = decideBetValue(toCall, handVal, betAmount, minimumBet, blind);
-			System.out.println(player_name + " raised by " + bet);
 			return bet(bet+toCall);
 		} else { //Call
-			if(toCall == 0) {System.out.println(player_name + " checked.");}
-			else {System.out.println(player_name + " called.");}
 			return bet(toCall);
 		}
 	}
@@ -275,7 +269,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 			while(bot.round_active && bot2.round_active){
 				//
 				System.out.println("to play: " + bot.player_name + "  bank:" + bot.getChips() + "  bet:" + bet);
-				int call = bet - bot.chipsInPot;
+				int call = bet - bot.getChipsInPot();
 				int t = bot.action(bet, min, blind);
 				bet += t - call;
 				min = Math.max(bet-call, min);
@@ -284,16 +278,16 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 					break;
 				}
 				System.out.println("to play: " + bot2.player_name + "  bank:" + bot2.getChips() + "  bet:" + bet);
-				call = bet - bot2.chipsInPot;
+				call = bet - bot2.getChipsInPot();
 				t = bot2.action(bet, min, blind);
 				bet += t - call;
 				min = Math.max(bet-call, min);
-				if(bot.chipsInPot == bot2.chipsInPot){
+				if(bot.getChipsInPot() == bot2.getChipsInPot()){
 					break;
 				}
 			}
-			bot.chipsInPot = 0; 
-			bot2.chipsInPot = 0;
+			bot.resetChipsInPot();
+			bot2.resetChipsInPot();
 		}
 		
 		bot = new AutomatedPokerPlayer("Yugi", deck);
