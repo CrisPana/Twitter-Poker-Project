@@ -28,7 +28,6 @@ public class RoundOfPoker {
 
 	static public final int SMALL_BLIND = 5;
 	static public final int BIG_BLIND = 10;
-	public boolean betRoundTwoFinished = false;
 	public int dealerLocation = 0;
 	public ArrayList<PokerPlayer> players = new ArrayList<PokerPlayer>();
 	public int pot = 0;
@@ -142,10 +141,10 @@ public class RoundOfPoker {
 		}
 	}
 	
-	//Return winner
-	private PokerPlayer getWinner(){
+	//Return last player in play
+	private PokerPlayer lastInPlay(){
 		PokerPlayer winner = players.get(0);
-		for(int i=0; i<players.size(); i++){
+		for(int i=1; i<players.size(); i++){
 			if(players.get(i).round_active){
 				winner = players.get(i);
 			}
@@ -153,8 +152,23 @@ public class RoundOfPoker {
 		return winner;
 	}
 	
+	//Return player with best hand
+	private PokerPlayer getWinner(){
+		PokerPlayer winner = null;
+		int winVal = 0;
+		for(int i=0; i<players.size(); i++){
+			PokerPlayer p = players.get(i);
+			int handVal = p.hand.getGameValue();
+			if(p.round_active && handVal>winVal){
+				winVal = handVal;
+				winner = p;
+			}
+		}
+		return winner;
+	}
+	
 	public PokerPlayer startRound() {
-		//change syso to a tweet to human user
+		
 		System.out.println("Round 1 betting begin:");
 		if(twitter!=null){
 			twitter.addToTweet("Round 1 of betting: ");
@@ -171,7 +185,7 @@ public class RoundOfPoker {
 		//PHASE 3 - Betting Round #1
 		betRound(BIG_BLIND, dealerLocation+3%players.size(), BIG_BLIND);
 		if(roundOver()){
-			return getWinner();
+			return lastInPlay();
 		}
 		
 		//PHASE 4 - Discarding
@@ -184,12 +198,11 @@ public class RoundOfPoker {
 		}
 		betRound(0, dealerLocation+3%players.size(), BIG_BLIND);
 		if(roundOver()){
-			return getWinner();
+			return lastInPlay();
 		}
 		
 		//PHASE 6 - Showdown
-		//to do
-		return players.get(0);
+		return getWinner();
 	}
 	
 	
