@@ -30,7 +30,7 @@ public class RoundOfPoker {
 	static public final int BIG_BLIND = 10;
 	public int dealerLocation = 0;
 	public ArrayList<PokerPlayer> players = new ArrayList<PokerPlayer>();
-	public int pot = 0;
+	private int pot = 0;
 	private TwitterStream twitter;
 	
 	//Phases
@@ -60,13 +60,14 @@ public class RoundOfPoker {
 	private void betRound(int minimumBet, int playerToAct, int blind){
 		boolean roundFinished = false;	//Round of betting complete
 		int betAmount = minimumBet;		//Amount required to play (total call amount)
-		int lastToBet = playerToAct;	//Last person to bet/First acting player if no bets/raises
+		int lastToBet = playerToAct;	//Last person to bet
 		
 		while(!roundFinished){
 			PokerPlayer acting = players.get(playerToAct);
 			//Skip player if not in round
 			if(!acting.round_active){
 				playerToAct = (playerToAct+1)%players.size();
+				if(playerToAct == lastToBet) roundFinished = true;
 				continue;
 			}
 			
@@ -74,14 +75,19 @@ public class RoundOfPoker {
 			//Get player action, add chips to pot and increase bet amounts if necessary
 			int temp = acting.action(betAmount, minimumBet, blind);
 			pot += temp;
-			betAmount += temp - toCall;
-			if ((temp - toCall) > minimumBet){
-				minimumBet = temp - toCall;
-				lastToBet = playerToAct;
+			if((temp - toCall) > 0){
+				betAmount += temp - toCall;
+				
+				//If a bet/raise - increase minimumBet
+				if((temp - toCall) >= minimumBet){
+					minimumBet = temp - toCall;
+					lastToBet = playerToAct;
+				}
 			}
 			
 			String str = getAction(acting, temp, toCall);
-			System.out.println(str);
+			//Output for testing
+			//System.out.println(str + toCall + "  " + temp + "  " + minimumBet + "  " + betAmount + "  " + players.get(lastToBet).player_name);
 			if(twitter!=null){
 				twitter.addToTweet(str);
 			}
@@ -169,7 +175,7 @@ public class RoundOfPoker {
 	
 	public PokerPlayer startRound() {
 		
-		System.out.println("Round 1 betting begin:");
+		System.out.println("Round 1 betting begin");
 		if(twitter!=null){
 			twitter.addToTweet("Round 1 of betting: ");
 		}
@@ -190,7 +196,7 @@ public class RoundOfPoker {
 		
 		//PHASE 4 - Discarding
 		discardRound();
-		System.out.println("Round 2");
+		System.out.println("Round 2 betting begin");
 		
 		//PHASE 5 - Betting Round #2
 		if(twitter!=null){
@@ -205,6 +211,10 @@ public class RoundOfPoker {
 		return getWinner();
 	}
 	
+	public int getPot(){
+		return pot;
+	}
+	
 	
 	public static void main(String args[]){
 		DeckOfCards deck = new DeckOfCards();
@@ -216,7 +226,23 @@ public class RoundOfPoker {
 		players.add(new AutomatedPokerPlayer("Sarah", deck));
 		
 		RoundOfPoker round = new RoundOfPoker(deck, players);
-		round.startRound();
+		PokerPlayer p = round.startRound();
+		System.out.println(p.player_name + " - " + p.hand);
+		
+		//Test a number of rounds
+		for(int i=0; i<300; i++){
+			deck.reset();
+			players = new ArrayList<PokerPlayer>();
+			players.add(new AutomatedPokerPlayer("Gill", deck));
+			players.add(new AutomatedPokerPlayer("Henry", deck));
+			players.add(new AutomatedPokerPlayer("John", deck));
+			players.add(new AutomatedPokerPlayer("Alice", deck));
+			players.add(new AutomatedPokerPlayer("Sarah", deck));
+			
+			round = new RoundOfPoker(deck, players);
+			p = round.startRound();
+			System.out.println(p.player_name + " - " + p.hand);
+		}
 	}
 	
 }

@@ -55,6 +55,10 @@ abstract class PokerPlayer {
 		return chips;
 	}
 	
+	public void addChips(int ch){
+		chips += ch;
+	}
+	
 	public int getChipsInPot(){
 		return chipsInPot;
 	}
