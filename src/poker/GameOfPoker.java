@@ -12,44 +12,106 @@
 
 package poker;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Random;
+import java.util.Scanner;
 
 import twitter4j.TwitterException;
 
 public class GameOfPoker {
+	
+	private static final int MAX_PLAYERS = 5;
+	private static final int MIN_PLAYERS = 2;
 
 	private DeckOfCards deck;
-	public JDECPokerBot pokerGame;
+	private TwitterStream twitter;
+	private int numPlayers;
 	public RoundOfPoker round;
 	public ArrayList<PokerPlayer> players = new ArrayList<PokerPlayer>();
 	public HumanPokerPlayer human;
 
-	public GameOfPoker() throws TwitterException, FileNotFoundException, IOException{
-		pokerGame = new JDECPokerBot();
-		
-		int noOfGame = 0;
-		while (noOfGame <= 0){
-			noOfGame = pokerGame.searchForGame();
-		}
+	public GameOfPoker(TwitterStream tw, int playerAmount) throws TwitterException, FileNotFoundException, IOException{
+		deck = new DeckOfCards();
+		twitter = tw;
+		numPlayers = Math.max(playerAmount, MIN_PLAYERS);
+		numPlayers = Math.min(numPlayers, MAX_PLAYERS);
 
-		human = new HumanPokerPlayer(pokerGame.getHumanPlayer(), deck);
+		human = new HumanPokerPlayer(twitter, deck);
 		players.add(human);
 		
-		int numPlayers = 1 + (int)(Math.random() * 4); ; 
-		for(int i = 0; i < numPlayers; i++)
-			players.add(new AutomatedPokerPlayer("John", deck));
+		//Add players
+		for(int i = 0; i < numPlayers; i++) players.add(getRandomAIPlayer());
 		
 		Collections.shuffle(players);	//shuffle players around the 'table'
 		round = new RoundOfPoker(deck, players);
 	}
 	
+	//Generate a random player
+	private AutomatedPokerPlayer getRandomAIPlayer() throws FileNotFoundException{
+		//List of AI names
+		File file = new File("botnames.txt");
+		String result = null;
+		Random rand = new Random();
+		Scanner sc = new Scanner(file);
+		//Reservoir sampling to select name
+		for(int i=1; sc.hasNext();){
+			String line = sc.nextLine();
+			//Skip duplicate names
+			boolean duplicate = false;
+			for(int j=0; j<players.size(); j++){
+				if(line.equals(players.get(j).player_name)) duplicate = true;
+			}
+			if(duplicate) continue;
+			//Chance to update name
+			if(rand.nextInt(i)==0) result = line;
+			i++;
+		}
+		sc.close();
+		return new AutomatedPokerPlayer(result, deck);
+	}
+	
+	//Remove bankrupt players from the player list
+	private void removeBankruptPlayers(){
+		for(int i=0; i<players.size(); i++){
+			if(players.get(i).getChips()<0){
+				players.remove(i);
+			}
+		}
+	}
+	
+	private PokerPlayer getWinner(){
+		if(players.size()>1){
+			return null;
+		} else {
+			return players.get(0);
+		}
+	}
+	
+	public void startGame(){
+		twitter.addToTweet("Starting " + numPlayers + " player game with " + human.player_name + ". ");
+		
+		while(getWinner()==null){
+			RoundOfPoker round = new RoundOfPoker(deck, players, twitter);
+			PokerPlayer roundWinner = round.startRound();
+			int pot = round.getPot();
+			twitter.addToTweet(roundWinner.player_name + " won " + pot + " chips! ");
+			removeBankruptPlayers();
+		}
+		
+		twitter.addToTweet(getWinner() + " won the game! ");
+		twitter.completeMessage();
+	}
+	
 	public static void main(String[] args) throws TwitterException, InterruptedException, FileNotFoundException, IOException {
 		
 		//testing - temp
-		GameOfPoker game = new GameOfPoker();
-		game.pokerGame.replyToTweet();
+		GameOfPoker game = new GameOfPoker(null, 5);
+		for(int i=0; i<game.players.size(); i++){
+			System.out.println(game.players.get(i).player_name);
+		}
 	}
 }

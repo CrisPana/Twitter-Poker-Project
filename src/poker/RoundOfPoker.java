@@ -92,6 +92,9 @@ public class RoundOfPoker {
 				twitter.addToTweet(str);
 			}
 			
+			//Check if round is over (in case all players folded before big blind)
+			if(roundOver()) roundFinished = true;
+			
 			playerToAct = (playerToAct+1)%players.size();
 			//Next player was the last to bet (end of betting round)
 			if(playerToAct == lastToBet) roundFinished = true;

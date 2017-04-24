@@ -64,7 +64,10 @@ public class HumanPokerPlayer extends PokerPlayer {
 		int toCall = betAmount - getChipsInPot();
 		boolean canCheck = toCall == 0;
 		
-		String actionMessage = "@" + player_name + "'s turn to act. Blinds are  " + blind + "/" + (blind/2) + ". ";
+		twitter.addToTweet(player_name + "'s hand: " + hand);
+		twitter.completeMessage();
+		
+		String actionMessage = player_name + "'s turn to act. Blinds are  " + blind + "/" + (blind/2) + ". ";
 		actionMessage += "Current bet is " + betAmount + ". ";
 		if(toCall > 0){
 			actionMessage += "You need " + toCall + " to call.";
@@ -130,7 +133,7 @@ public class HumanPokerPlayer extends PokerPlayer {
 	@Override
 	int discard() {
 		//Tweet message
-		String actionMessage = "@" + player_name + "'s turn to discard. Your hand is: " + hand;
+		String actionMessage = player_name + "'s turn to discard. Your hand is: " + hand;
 		actionMessage += "Enter positions of cards (1-5, Max " + MAX_DISCARDS + ") ";
 		twitter.addToTweet(actionMessage);
 		twitter.completeMessage();

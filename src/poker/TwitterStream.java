@@ -13,6 +13,7 @@
 package poker;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import twitter4j.Paging;
 import twitter4j.Status;
@@ -23,20 +24,23 @@ import twitter4j.User;
 
 public class TwitterStream {
 	
-	static private final int CHAR_LIMIT = 140;
+	static private final int CHAR_LIMIT = 134;
 	static private final int NUM_TWEETS_TO_CHECK = 20;
-	static private
+	static private final int BASE_TWEET_DELAY = 15;		//Necessary to avoid rate limiting
+	static private final int RANDOM_TWEET_DELAY = 5;
 	
-	Twitter twitter;
-	User user;
-	Status mostRecent;
-	String toSend;
+	private Twitter twitter;
+	public User user;
+	private Status mostRecent;
+	private String toSend;
+	private String tweetID;
 	
 	TwitterStream(Twitter twit, Status status, User twitterUser){
 		twitter = twit;
 		user = twitterUser;
 		mostRecent = status;
 		toSend = "";
+		tweetID = "00";
 	}
 	
 	//Add string to current message, send current message if tweet would become too long
@@ -73,11 +77,21 @@ public class TwitterStream {
 	}
 	
 	//Send tweet
-	public synchronized void sendTweet(String str) throws TwitterException, InterruptedException {
-    	StatusUpdate statusUpdate = new StatusUpdate(str);
-    	statusUpdate.inReplyToStatusId(mostRecent.getId());
+	private synchronized void sendTweet(String str) throws TwitterException, InterruptedException {
+    	StatusUpdate statusUpdate = new StatusUpdate("[" + tweetID + "] " + str);
+    	updateTweetID();
+    	//statusUpdate.inReplyToStatusId(mostRecent.getId());	//Replies potentially causing api restriction?
     	mostRecent = twitter.updateStatus(statusUpdate); 
-    	Thread.sleep(10*1000);
+    	Random rand = new Random();
+		int delay = BASE_TWEET_DELAY + rand.nextInt(RANDOM_TWEET_DELAY);
+		Thread.sleep(delay*1000);
+	}
+	
+	//TweetIdentifier to avoid duplicates
+	private void updateTweetID(){
+		int id = Integer.parseInt(tweetID);
+		id++;
+		tweetID = String.format("%02d", id);
 	}
 	
 	//Get the most recent status from user that is a reply to latest poker tweet (if it exists)
@@ -104,7 +118,9 @@ public class TwitterStream {
 		Status response = null;
 		while(response == null){
 			response = getRecentReply();
-			Thread.sleep(10*1000);
+			Random rand = new Random();
+			int delay = BASE_TWEET_DELAY + rand.nextInt(RANDOM_TWEET_DELAY);
+			Thread.sleep(delay*1000);
 		}
 		return response.getText();
 	}
