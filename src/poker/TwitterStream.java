@@ -65,6 +65,7 @@ public class TwitterStream {
 		if(toSend.length() > 0){
 			try {
 				sendTweet(toSend);
+				toSend = "";
 			} catch (TwitterException | InterruptedException e) {
 				System.out.println(e.getMessage());
 			}
@@ -76,7 +77,7 @@ public class TwitterStream {
     	StatusUpdate statusUpdate = new StatusUpdate(str);
     	statusUpdate.inReplyToStatusId(mostRecent.getId());
     	mostRecent = twitter.updateStatus(statusUpdate); 
-    	Thread.sleep(20*1000);
+    	Thread.sleep(10*1000);
 	}
 	
 	//Get the most recent status from user that is a reply to latest poker tweet (if it exists)
@@ -90,8 +91,6 @@ public class TwitterStream {
 		statuses.addAll(twitter.getUserTimeline(u, paging));
 		//Check if any status is a reply to latest tweet
 		for(int i = 0; i<statuses.size(); i++){
-			System.out.println(statuses.get(i).getInReplyToStatusId());
-			System.out.println(statuses.get(i).getText());
 			if(statuses.get(i).getInReplyToStatusId()==mostRecent.getId()){
 				mostRecent = statuses.get(i);
 				return statuses.get(i);
