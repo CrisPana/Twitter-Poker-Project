@@ -622,7 +622,7 @@ public class HandOfCards {
 	public String toString() {
 		String output = "";
 		for (int i = 0; i < 5; i++)
-			output += hand.get(i).toString() + "\t";
+			output += hand.get(i).toString() + " ";
 		return output;
 	}
 

@@ -19,12 +19,13 @@ import twitter4j.TwitterException;
 public class HumanPokerPlayer extends PokerPlayer {
 	
 	//Player actions
-	static private final String FOLD_ACTION = "fold";
-	static private final String CHECK_ACTION = "check";
-	static private final String CALL_ACTION = "call";
-	static private final String BET_ACTION = "bet";
-	static private final String RAISE_ACTION = "raise";
-	static private final String ALL_IN_ACTION = "allin";
+	private static final String FOLD_ACTION = "fold";
+	private static final String CHECK_ACTION = "check";
+	private static final String CALL_ACTION = "call";
+	private static final String BET_ACTION = "bet";
+	private static final String RAISE_ACTION = "raise";
+	private static final String ALL_IN_ACTION = "allin";
+	private static final int MAX_DISCARDS = 3;
 	
 	TwitterStream twitter;
 
@@ -33,9 +34,33 @@ public class HumanPokerPlayer extends PokerPlayer {
 		isBot = false;
 		twitter = tw;
 	}
+	
+	//Returns an array of words from twitter to be used as input
+	private String[] getTwitterInput(){
+		//Get action string from twitter
+		String[] twitterWords;
+		try {
+			twitterWords = twitter.parseResponse().split("\\s+");
+		} catch (TwitterException | InterruptedException e) {
+			e.printStackTrace();
+			return new String[] {"fold"};
+		}
+		//Remove punctuation, remove '@'s
+		int wordIndex = 0;
+		for (int i = 0; i < twitterWords.length; i++) {
+			if(twitterWords[i].startsWith("@")) continue;
+			twitterWords[wordIndex] = twitterWords[i].replaceAll("[^\\w]", "");
+			wordIndex++;
+		}
+		String[] actionWords = new String[wordIndex];
+		for (int i = 0; i < actionWords.length; i++) {
+			actionWords[i] = twitterWords[i];
+		}
+		return actionWords;
+	}
 
 	@Override
-	int action(int betAmount, int minimumBet, int blind) {
+	public int action(int betAmount, int minimumBet, int blind) {
 		int toCall = betAmount - getChipsInPot();
 		boolean canCheck = toCall == 0;
 		
@@ -56,22 +81,8 @@ public class HumanPokerPlayer extends PokerPlayer {
 			twitter.addToTweet(actionMessage);
 			twitter.completeMessage();
 			//Get action string from twitter
-			String[] actionWords;
-			try {
-				actionWords = twitter.parseResponse().split("\\s+");
-			} catch (TwitterException | InterruptedException e) {
-				e.printStackTrace();
-				fold();
-				return 0;
-			}
-			//Remove punctuation
-			int wordIgnore = 0;
-			//Ignore '@'s
-			if(actionWords[0].startsWith("@")) wordIgnore = 1;
-			for (int i = 0; i < actionWords.length; i++) {
-				actionWords[i] = actionWords[i].replaceAll("[^\\w]", "");
-			}
-			String playerAction = actionWords[wordIgnore];
+			String[] actionWords = getTwitterInput();
+			String playerAction = actionWords[0];
 			//Parse action
 			if(playerAction.equalsIgnoreCase(FOLD_ACTION)){
 				fold();
@@ -83,13 +94,13 @@ public class HumanPokerPlayer extends PokerPlayer {
 				return bet(Math.min(toCall, getChips()));			//doesn't have enough chips then they all in
 			} else if(playerAction.equalsIgnoreCase(BET_ACTION) || playerAction.equalsIgnoreCase(RAISE_ACTION)){
 				//bet/raise ensures integer argument is present
-				if(actionWords.length-wordIgnore<2){
+				if(actionWords.length<2){
 					validAction = false;
 					continue;
 				}
 				int playerBet;
 				try {
-					playerBet = Integer.parseInt(actionWords[wordIgnore+1]);
+					playerBet = Integer.parseInt(actionWords[1]);
 				} catch (NumberFormatException e) {
 					validAction = false;
 					continue;
@@ -106,7 +117,7 @@ public class HumanPokerPlayer extends PokerPlayer {
 					continue;
 				}
 				return bet(playerBet);
-			} else if(actionWords.length-wordIgnore>1 && (playerAction+actionWords[wordIgnore+1]).equalsIgnoreCase(ALL_IN_ACTION)){
+			} else if(actionWords.length>1 && (playerAction+actionWords[1]).equalsIgnoreCase(ALL_IN_ACTION)){
 				//all in simply all ins
 				return bet(getChips());
 			} else {
@@ -118,7 +129,26 @@ public class HumanPokerPlayer extends PokerPlayer {
 
 	@Override
 	int discard() {
-		// TODO Auto-generated method stub
-		return 0;
+		//Tweet message
+		String actionMessage = "@" + player_name + "'s turn to discard. Your hand is: " + hand;
+		actionMessage += "Enter positions of cards (1-5, Max " + MAX_DISCARDS + ") ";
+		twitter.addToTweet(actionMessage);
+		twitter.completeMessage();
+		
+		//Get input
+		String[] discardWords = getTwitterInput();
+		//Get discards
+		int discarded = 0;//Amount discarded
+		for(int i=0; i<discardWords.length && discarded<=MAX_DISCARDS; i++){
+			if(discardWords[i].matches("\\d+")){//Is string numeric?
+				int discard = Integer.parseInt(discardWords[i]);
+				if(discard>0 && discard<6){
+					hand.discard(discard-1);
+					discarded++;
+				}
+			}
+		}
+		
+		return discarded;
 	}
 }

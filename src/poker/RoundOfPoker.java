@@ -48,7 +48,7 @@ public class RoundOfPoker {
 		}
 		twitter = stream;
 	}
-	//Alternative constructor
+	//Alternative constructor for AI only games
 	public RoundOfPoker(DeckOfCards deck, ArrayList<PokerPlayer> players) {
 		this.players = players;
 		for(int i=0; i<players.size(); i++){
@@ -120,8 +120,16 @@ public class RoundOfPoker {
 		for(int i=0; i<players.size(); i++){
 			if(!players.get(i).round_active) continue;
 			
-			players.get(i).discard();
-			
+			int discarded = players.get(i).discard();
+			if(twitter!=null){
+				String str = players.get(i).player_name + " discarded " + discarded;
+				if(discarded==1){
+					str += " card. ";
+				} else {
+					str += " cards. ";
+				}
+				twitter.addToTweet(str);
+			}
 		}
 	}
 	
