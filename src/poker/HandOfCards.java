@@ -13,7 +13,6 @@
 package poker;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -608,13 +607,15 @@ public class HandOfCards {
 		return discard;
 	}
 	
-	//Returns a card at an index to the deck, and deals a new card.
-	public void discard(int index){
-		//Return card
-		deck.returnCard(hand.get(index));
-		hand.remove(index);
-		//Deal new card
-		hand.add(deck.dealNext());
+	//Returns cards at an index to the deck, and deals new cards.
+	public void discard(int[] indices, int amountToDiscard){
+		for(int i=0; i<amountToDiscard; i++){
+			//Return card
+			deck.returnCard(hand.get(indices[i]));
+			hand.remove(indices[i]);
+			//Deal new card
+			hand.add(indices[i], deck.dealNext());
+		}
 		sort();
 	}
 

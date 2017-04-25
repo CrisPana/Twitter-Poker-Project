@@ -28,6 +28,7 @@ public class DeckOfCards { // deck of cards class
 	}
 
 	public void reset() {
+		dealt = 0;
 		for (int i = 0; i < CARDS_IN_SUIT; i++) { // iterates through card types
 			for (int j = 0; j < 4; j++) { // iterates through suits
 				if (i == 0)

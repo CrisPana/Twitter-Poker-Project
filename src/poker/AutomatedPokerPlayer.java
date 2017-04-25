@@ -12,6 +12,8 @@
 
 package poker;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Random;
 
 public class AutomatedPokerPlayer extends PokerPlayer{
@@ -204,14 +206,26 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		int random = minChance + rand.nextInt(MAXIMUM_DISCARD_CHANCE - minChance);
 		
 		//Discard cards, but no more than MAX_DISCARD (3)
-		for(int i=0; i<HandOfCards.HAND_SIZE && discarded<MAX_DISCARD; i++){
+		ArrayList<Integer> toDiscard = new ArrayList<Integer>();
+		for(int i=0; i<HandOfCards.HAND_SIZE; i++){
 			int discardProb = hand.getDiscardProbability(i);
 			//Discard if random < probability
 			if(random<discardProb){
-				hand.discard(i);
+				if(discarded>=MAX_DISCARD){
+					toDiscard.remove(0);
+					discarded--;
+				}
+				toDiscard.add(i);
+				Collections.sort(toDiscard);
 				discarded++;
 			}
 		}
+		//Integer[] discardArray = toDiscard.toArray(new Integer[MAX_DISCARD]);
+		int[] discardArray = new int[MAX_DISCARD];
+		for(int i=0; i<toDiscard.size() && i<MAX_DISCARD; i++){
+			discardArray[i] = toDiscard.get(i);
+		}
+		hand.discard(discardArray, discarded);
 		
 		//Return amount of cards discarded
 		return discarded;
@@ -309,11 +323,12 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		
 		System.out.println(bot.getChips());
 		
+		deck.reset();
+		bot = new AutomatedPokerPlayer("Yugi", deck);
 		System.out.println("\n" + bot.hand);
-		bot.discard();
-		System.out.println("\n" + bot.hand);
-		for(int i=0; i<100; i++){
+		for(int i=0; i<5; i++){
 			bot.discard();
+			System.out.println("\n" + bot.hand);
 		}
 		System.out.println("\n" + bot.hand);
 	}

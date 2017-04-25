@@ -142,15 +142,17 @@ public class HumanPokerPlayer extends PokerPlayer {
 		String[] discardWords = getTwitterInput();
 		//Get discards
 		int discarded = 0;//Amount discarded
+		int[] toDiscard = new int[MAX_DISCARDS];
 		for(int i=0; i<discardWords.length && discarded<=MAX_DISCARDS; i++){
 			if(discardWords[i].matches("\\d+")){//Is string numeric?
 				int discard = Integer.parseInt(discardWords[i]);
 				if(discard>0 && discard<6){
-					hand.discard(discard-1);
+					toDiscard[discarded] = discard-1;
 					discarded++;
 				}
 			}
 		}
+		hand.discard(toDiscard, discarded);
 		
 		return discarded;
 	}
