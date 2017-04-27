@@ -186,6 +186,7 @@ public class RoundOfPoker {
 	
 	public PokerPlayer startRound() {
 		
+		playerChipsUpdate();
 		System.out.println("Round 1 betting begin");
 		if(twitter!=null){
 			twitter.addToTweet("Round 1 of betting: ");
@@ -226,6 +227,12 @@ public class RoundOfPoker {
 		return pot;
 	}
 	
+	public void playerChipsUpdate(){
+		for (int i = 0; i < players.size(); i++) {
+			twitter.addToTweet("(" + players.get(i).player_name + "'s current chips = )" + players.get(i).getChips());
+			twitter.completeMessage();
+		}
+	}
 	
 	public static void main(String args[]){
 		DeckOfCards deck = new DeckOfCards();

@@ -16,7 +16,7 @@ abstract class PokerPlayer {
 	
 	public String player_name;
 	private int chips = 100;
-	private int chipsInPot = 0;
+	protected int chipsInPot = 0;
 	protected boolean isBot;
 	public boolean round_active = false;
 	protected HandOfCards hand;
