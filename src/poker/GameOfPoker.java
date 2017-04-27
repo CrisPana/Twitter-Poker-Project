@@ -99,6 +99,7 @@ public class GameOfPoker {
 			PokerPlayer roundWinner = round.startRound();
 			System.out.println("ROUND OVER");
 			int pot = round.getPot();
+			roundWinner.addChips(round.getPot());
 			twitter.addToTweet(roundWinner.player_name + " won " + pot + " chips! ");
 			removeBankruptPlayers();
 		}
