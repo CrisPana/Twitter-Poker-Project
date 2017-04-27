@@ -43,8 +43,10 @@ public class RoundOfPoker {
 
 	public RoundOfPoker(DeckOfCards deck, ArrayList<PokerPlayer> players, TwitterStream stream) {
 		this.players = players;
+		deck.reset();
 		for(int i=0; i<players.size(); i++){
 			players.get(i).round_active = true;
+			players.get(i).resetHand(deck);
 		}
 		twitter = stream;
 	}
@@ -205,6 +207,8 @@ public class RoundOfPoker {
 		if(roundOver()){
 			return lastInPlay();
 		}
+		twitter.addToTweet("(Current chips in pot = " + pot + ")");
+		twitter.completeMessage();
 		
 		//PHASE 4 - Discarding
 		discardRound();
@@ -214,6 +218,7 @@ public class RoundOfPoker {
 		if(twitter!=null){
 			twitter.addToTweet("Round 2 of betting: ");
 		}
+		
 		betRound(0, dealerLocation+3%players.size(), BIG_BLIND);
 		if(roundOver()){
 			return lastInPlay();
@@ -229,9 +234,9 @@ public class RoundOfPoker {
 	
 	public void playerChipsUpdate(){
 		for (int i = 0; i < players.size(); i++) {
-			twitter.addToTweet("(" + players.get(i).player_name + "'s current chips = )" + players.get(i).getChips());
-			twitter.completeMessage();
+			twitter.addToTweet("(" + players.get(i).player_name + "'s current chips = " + players.get(i).getChips() +")");
 		}
+		twitter.completeMessage();
 	}
 	
 	public static void main(String args[]){

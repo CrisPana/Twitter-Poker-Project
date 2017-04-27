@@ -44,7 +44,7 @@ public class GameOfPoker {
 		players.add(human);
 		
 		//Add players
-		for(int i = 0; i < numPlayers; i++) players.add(getRandomAIPlayer());
+		for(int i = 1; i < numPlayers; i++) players.add(getRandomAIPlayer());
 		
 		Collections.shuffle(players);	//shuffle players around the 'table'
 		round = new RoundOfPoker(deck, players);
@@ -97,6 +97,7 @@ public class GameOfPoker {
 		while(getWinner()==null){
 			RoundOfPoker round = new RoundOfPoker(deck, players, twitter);
 			PokerPlayer roundWinner = round.startRound();
+			System.out.println("ROUND OVER");
 			int pot = round.getPot();
 			twitter.addToTweet(roundWinner.player_name + " won " + pot + " chips! ");
 			removeBankruptPlayers();

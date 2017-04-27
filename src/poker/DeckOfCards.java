@@ -27,8 +27,9 @@ public class DeckOfCards { // deck of cards class
 		reset();
 	}
 
-	public void reset() {
+	public synchronized void reset() {
 		dealt = 0;
+		deck.clear();
 		for (int i = 0; i < CARDS_IN_SUIT; i++) { // iterates through card types
 			for (int j = 0; j < 4; j++) { // iterates through suits
 				if (i == 0)
@@ -72,5 +73,24 @@ public class DeckOfCards { // deck of cards class
 		synchronized (deck) {
 			deck.add(discarded);
 		}
+	}
+	
+	public String toString(){
+		String output = "";
+		for(int i=0;i<deck.size();i++) output += deck.get(i).toString() + " ";
+		return output;
+	}
+	
+	public static void main(String[] args) {
+		DeckOfCards d = new DeckOfCards();
+		d.reset();
+		System.out.println("1: " + d.toString());
+		d.reset();
+		System.out.println("2: " + d.toString());
+		d.reset();
+		System.out.println("3: " + d.toString());
+		d.reset();
+		System.out.println("4: " + d.toString());
+		for (int i = 0; i < 10; i++) d.dealNext();
 	}
 }

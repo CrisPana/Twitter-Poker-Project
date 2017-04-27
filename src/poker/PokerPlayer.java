@@ -67,6 +67,10 @@ abstract class PokerPlayer {
 		chipsInPot = 0;
 	}
 	
+	public void resetHand(DeckOfCards deck){
+		hand = new HandOfCards(deck);
+	}
+	
 	//return what kind of hand player has
 	private String checkHand(){
 		return hand.getHandType();

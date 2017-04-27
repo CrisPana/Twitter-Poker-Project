@@ -26,7 +26,7 @@ public class TwitterStream {
 	
 	static private final int CHAR_LIMIT = 134;
 	static private final int NUM_TWEETS_TO_CHECK = 20;
-	static private final int BASE_TWEET_DELAY = 25;		//Necessary to avoid rate limiting
+	static private final int BASE_TWEET_DELAY = 10;		//Necessary to avoid rate limiting
 	static private final int RANDOM_TWEET_DELAY = 5;
 	
 	private Twitter twitter;

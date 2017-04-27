@@ -73,9 +73,6 @@ public class HumanPokerPlayer extends PokerPlayer {
 			actionMessage += "You need " + toCall + " to call.";
 		}
 		
-		twitter.addToTweet("(Current chips in pot = " + chipsInPot + ")");
-		twitter.completeMessage();
-		
 		boolean needPlayerAction = true;	//loops until something is returned
 		boolean validAction = true;			//set to false if a player bet is invalid
 		while(needPlayerAction){
