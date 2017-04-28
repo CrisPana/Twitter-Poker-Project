@@ -59,7 +59,7 @@ public class RoundOfPoker {
 	}
 	
 	//Complete a round of betting starting with an acting player and minimum bet (usually big blind or zero)
-	private void betRound(int minimumBet, int playerToAct, int blind){
+	private int betRound(int minimumBet, int playerToAct, int blind){
 		boolean roundFinished = false;	//Round of betting complete
 		int betAmount = minimumBet;		//Amount required to play (total call amount)
 		int lastToBet = playerToAct;	//Last person to bet
@@ -76,6 +76,7 @@ public class RoundOfPoker {
 			int toCall = betAmount - acting.getChipsInPot();	//Amount needed for player to call
 			//Get player action, add chips to pot and increase bet amounts if necessary
 			int temp = acting.action(betAmount, minimumBet, blind);
+			if (temp == -1) return -1;
 			pot += temp;
 			if((temp - toCall) > 0){
 				betAmount += temp - toCall;
@@ -104,30 +105,32 @@ public class RoundOfPoker {
 		
 		//Clear the amount of chips each player has put in pot
 		clearPersonalBetValues();
+		return 0;
 	}
 	
 	//Returns a string describing a player's action using the amount of chips they added to the pot
 	private String getAction(PokerPlayer player, int addedChips, int requiredChips){
 		if(!player.round_active){
-			return player.player_name + " folded. ";
+			return "\n" + player.player_name + " folded. ";
 		}
 		if(addedChips>requiredChips){
 			if(requiredChips == 0) return player.player_name + " bet " + addedChips + ". ";
-			return player.player_name + " raised by " + (addedChips-requiredChips) + ". ";
+			return "\n" + player.player_name + " raised by " + (addedChips-requiredChips) + ". ";
 		} else {
 			if(addedChips == 0) return player.player_name + " checked. ";
-			return player.player_name + " called. ";
+			return "\n" + player.player_name + " called. ";
 		}
 	}
 	
 	//Complete a round of discarding hands
-	private void discardRound(){
+	private int discardRound(){
 		for(int i=0; i<players.size(); i++){
 			if(!players.get(i).round_active) continue;
 			
 			int discarded = players.get(i).discard();
+			if (discarded == -1) return -1;
 			if(twitter!=null){
-				String str = players.get(i).player_name + " discarded " + discarded;
+				String str = "\n" + players.get(i).player_name + " discarded " + discarded;
 				if(discarded==1){
 					str += " card. ";
 				} else {
@@ -136,6 +139,7 @@ public class RoundOfPoker {
 				twitter.addToTweet(str);
 			}
 		}
+		return 0;
 	}
 	
 	//Reset pot values
@@ -191,7 +195,7 @@ public class RoundOfPoker {
 		playerChipsUpdate();
 		System.out.println("Round 1 betting begin");
 		if(twitter!=null){
-			twitter.addToTweet("Round 1 of betting: ");
+			twitter.addToTweet("\nRound 1 of betting: ");
 		}
 		
 		//PHASE 1 - five cards dealt to each player
@@ -203,7 +207,8 @@ public class RoundOfPoker {
 		pot += players.get(dealerLocation+2%players.size()).bet(BIG_BLIND);
 		
 		//PHASE 3 - Betting Round #1
-		betRound(BIG_BLIND, dealerLocation+3%players.size(), BIG_BLIND);
+		int status = betRound(BIG_BLIND, dealerLocation+3%players.size(), BIG_BLIND);
+		if (status == -1)	return null;
 		if(roundOver()){
 			return lastInPlay();
 		}
@@ -211,15 +216,17 @@ public class RoundOfPoker {
 		twitter.completeMessage();
 		
 		//PHASE 4 - Discarding
-		discardRound();
+		status = discardRound();
+		if (status == -1)	return null;
 		System.out.println("Round 2 betting begin");
 		
 		//PHASE 5 - Betting Round #2
 		if(twitter!=null){
-			twitter.addToTweet("Round 2 of betting: ");
+			twitter.addToTweet("\nRound 2 of betting: ");
 		}
 		
-		betRound(0, dealerLocation+3%players.size(), BIG_BLIND);
+		status = betRound(0, dealerLocation+3%players.size(), BIG_BLIND);
+		if (status == -1)	return null;
 		if(roundOver()){
 			return lastInPlay();
 		}

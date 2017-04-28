@@ -25,6 +25,7 @@ public class HumanPokerPlayer extends PokerPlayer {
 	private static final String BET_ACTION = "bet";
 	private static final String RAISE_ACTION = "raise";
 	private static final String ALL_IN_ACTION = "allin";
+	private static final String LEAVE_GAME = "leave";
 	private static final int MAX_DISCARDS = 3;
 	
 	TwitterStream twitter;
@@ -32,6 +33,7 @@ public class HumanPokerPlayer extends PokerPlayer {
 	HumanPokerPlayer(TwitterStream tw, DeckOfCards deck) {
 		super(tw.user.getScreenName(), deck);
 		isBot = false;
+		game_active = true;
 		twitter = tw;
 	}
 	
@@ -64,7 +66,7 @@ public class HumanPokerPlayer extends PokerPlayer {
 		int toCall = betAmount - getChipsInPot();
 		boolean canCheck = toCall == 0;
 		
-		twitter.addToTweet(player_name + "'s hand: " + hand);
+		twitter.addToTweet("\n" + player_name + "'s hand: " + hand);
 		twitter.completeMessage();
 		
 		String actionMessage = player_name + "'s turn to act. Blinds are  " + blind + "/" + (blind/2) + ". ";
@@ -87,7 +89,10 @@ public class HumanPokerPlayer extends PokerPlayer {
 			String[] actionWords = getTwitterInput();
 			String playerAction = actionWords[0];
 			//Parse action
-			if(playerAction.equalsIgnoreCase(FOLD_ACTION)){
+			if (playerAction.equalsIgnoreCase(LEAVE_GAME)){
+				game_active = false;
+				return -1;
+			} else if(playerAction.equalsIgnoreCase(FOLD_ACTION)){
 				fold();
 				return 0;
 			} else if(playerAction.equalsIgnoreCase(CHECK_ACTION)){	//if check, bets nothing
@@ -123,7 +128,8 @@ public class HumanPokerPlayer extends PokerPlayer {
 			} else if(actionWords.length>1 && (playerAction+actionWords[1]).equalsIgnoreCase(ALL_IN_ACTION)){
 				//all in simply all ins
 				return bet(getChips());
-			} else {
+			} 
+			else {
 				validAction = false;//we should never hit this
 			}
 		}
@@ -140,6 +146,14 @@ public class HumanPokerPlayer extends PokerPlayer {
 		
 		//Get input
 		String[] discardWords = getTwitterInput();
+		String playerAction = discardWords[0];
+		
+		//Parse action
+		if (playerAction.equalsIgnoreCase(LEAVE_GAME)){
+			game_active = false;
+			return -1;
+		}
+		
 		//Get discards
 		int discarded = 0;//Amount discarded
 		int[] toDiscard = new int[MAX_DISCARDS];

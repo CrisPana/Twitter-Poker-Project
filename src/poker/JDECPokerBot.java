@@ -1,4 +1,3 @@
-
 /*
  * Software Engineering III - Twitter Poker Project
  * Team Name : JDEC

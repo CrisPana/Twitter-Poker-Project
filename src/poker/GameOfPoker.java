@@ -91,21 +91,46 @@ public class GameOfPoker {
 		}
 	}
 	
+	//gets the index from array list of players which the human is
+	private int humanIndex(){
+		int index = -1;
+		for (int i = 0; i < players.size(); i++){
+			if (players.get(i).isBot == false)
+				index = i;
+		}
+		return index;
+	}
+	
 	public void startGame(){
-		twitter.addToTweet("Starting " + numPlayers + " player game with " + human.player_name + ". ");
+		twitter.addToTweet("Starting " + numPlayers + " player game with " + human.player_name + ".\n");
 		
-		while(getWinner()==null){
+		int human_index = humanIndex();
+		while(getWinner()==null && players.get(human_index).game_active==true){
 			RoundOfPoker round = new RoundOfPoker(deck, players, twitter);
 			PokerPlayer roundWinner = round.startRound();
-			System.out.println("ROUND OVER");
+			//if human player decides to leave mid-game
+			if (roundWinner == null) break;
 			int pot = round.getPot();
 			roundWinner.addChips(round.getPot());
-			twitter.addToTweet(roundWinner.player_name + " won " + pot + " chips! ");
+			twitter.addToTweet("\n" + roundWinner.player_name + " won " + pot + " chips! ");
+			
+			//display players' cards who have not folded
+			for(int i = 0; i < players.size(); i++){
+				if (players.get(i).round_active != false){
+					twitter.addToTweet("\n" + players.get(i).player_name + "'s cards: " + players.get(i).hand.toString());
+				}
+			}
+			twitter.completeMessage();
 			removeBankruptPlayers();
 		}
 		
-		twitter.addToTweet(getWinner() + " won the game! ");
+		if (getWinner() != null){
+			twitter.addToTweet(getWinner() + " won the game! ");
+		} else {
+			twitter.addToTweet(players.get(human_index).player_name + " has left the game.");
+		}
 		twitter.completeMessage();
+		
 	}
 	
 	public static void main(String[] args) throws TwitterException, InterruptedException, FileNotFoundException, IOException {

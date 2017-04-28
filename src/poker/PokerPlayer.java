@@ -19,8 +19,9 @@ abstract class PokerPlayer {
 	protected int chipsInPot = 0;
 	protected boolean isBot;
 	public boolean round_active = false;
+	public boolean game_active = false;
 	protected HandOfCards hand;
-	
+
 	PokerPlayer (String name, DeckOfCards deck){
 		player_name = name;
 		hand = new HandOfCards(deck);
@@ -71,6 +72,9 @@ abstract class PokerPlayer {
 		hand = new HandOfCards(deck);
 	}
 	
+	public String toString(){
+		return hand.toString();
+	}
 	//return what kind of hand player has
 	private String checkHand(){
 		return hand.getHandType();
