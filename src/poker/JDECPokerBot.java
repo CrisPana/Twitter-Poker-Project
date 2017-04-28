@@ -72,12 +72,9 @@ public class JDECPokerBot {
 	    	//Remove old tweets
 	    	for(int i=0; i<games.size(); i++){
 	    		Date created = games.get(i).getCreatedAt();
-	    		System.out.println(games.size() + " - " + i);
-	    		System.out.println(created);
-	    		System.out.println(searchBegin);
 	    		if(created.before(searchBegin)){
-	    			games.remove(i);
-	    			i = i-1;
+	    			//games.remove(i);
+	    			//i = i-1;
 	    		}
 	    	}
 	    	if(games.size()<1) Thread.sleep(BASE_SCAN_DELAY*1000);
@@ -91,13 +88,12 @@ public class JDECPokerBot {
     }
     
     public int playGame(Status game) throws TwitterException, InterruptedException {
-    	//StatusUpdate statusUpdate = new StatusUpdate("Starting game with " + game.getUser().getScreenName());
-    	//statusUpdate.inReplyToStatusId(tweetResult.getId());
-    	//Status s = twitter.updateStatus(statusUpdate);
     	
-    	TwitterStream stream = new TwitterStream(twitter, game, game.getUser());
+    	//** Use twitter stream for twitter input/output or local stream for console input/output
+    	//TwitterStream stream = new TwitterStream(twitter, game, game.getUser());
+    	LocalStream stream = new LocalStream(twitter, game, game.getUser());
     	
-    	Thread.sleep(BASE_TWEET_DELAY*1000);
+    	//Thread.sleep(BASE_TWEET_DELAY*1000);
     	
     	GameOfPoker pokerGame = null;
 		try {

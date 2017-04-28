@@ -90,7 +90,7 @@ public class RoundOfPoker {
 			
 			String str = getAction(acting, temp, toCall);
 			//Output for testing
-			System.out.println(str + toCall + "  " + temp + "  " + minimumBet + "  " + betAmount + "  " + players.get(lastToBet).player_name);
+			//System.out.println(str + toCall + "  " + temp + "  " + minimumBet + "  " + betAmount + "  " + players.get(lastToBet).player_name);
 			if(twitter!=null){
 				twitter.addToTweet(str);
 			}
