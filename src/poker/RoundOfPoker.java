@@ -191,7 +191,6 @@ public class RoundOfPoker {
 	public PokerPlayer startRound() {
 		
 		playerChipsUpdate();
-		System.out.println("Round 1 betting begin");
 		if(twitter!=null){
 			twitter.addToTweet("\nRound 1 of betting: ");
 		}
@@ -216,7 +215,6 @@ public class RoundOfPoker {
 		//PHASE 4 - Discarding
 		status = discardRound();
 		if (status == -1)	return null;
-		System.out.println("Round 2 betting begin");
 		
 		//PHASE 5 - Betting Round #2
 		if(twitter!=null){
