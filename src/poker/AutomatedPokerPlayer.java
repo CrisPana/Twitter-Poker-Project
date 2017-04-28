@@ -16,6 +16,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
+/*
+ * AutomatedPokerPlayer is a subclass of PokerPlayer 
+ * and is the class that is essentially the AI of the project
+ * This class makes it own decisions based 
+ * on the nature they have acquired
+ * */
 public class AutomatedPokerPlayer extends PokerPlayer{
 	
 	static public final int NUMBER_OF_PERSONALITIES = 3;
@@ -177,7 +183,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 				if(canCheck){
 					return bet(0);
 				} else {
-					fold();
+					round_active = false;
 					return 0;
 				}
 			}
@@ -233,17 +239,53 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 	
 	void generatePersonality(int t){
 		switch(t){
-		case 0:
-			//discardmodifier=-2; 		//not sure how to do this. we could have the discard function do different things
-			//							//for a range of small ints (e.g. -3->3) or just multiply/add/both a value (e.g. add 20)
-			bluffChance=10 + BASE_BLUFF_CHANCE;		//this could just be the bot's chance to bluff with a bad hand
-			foldmodifier=-1;			//same as the rest. we need to figure out the best way of doing this.	
-			discardModifier = 10;		//Lower limit for discarding cards
-			inRed = 2;					//The number of big blinds the player tries to preserve when playing a hand
-			upperBetModifier = 1.2;		//This means the bot would bet between 1 and 1.2 times the expected bet value.
-			lowerBetModifier = 1;
-		case 1:
-		case 2:
+			//strong bluffer
+			case 0:
+				//discardmodifier=-2; 		//not sure how to do this. we could have the discard function do different things
+				//							//for a range of small ints (e.g. -3->3) or just multiply/add/both a value (e.g. add 20)
+				bluffChance = 25 + BASE_BLUFF_CHANCE;		//this could just be the bot's chance to bluff with a bad hand
+				foldmodifier = -1;			//same as the rest. we need to figure out the best way of doing this.	
+				discardModifier = 10;		//Lower limit for discarding cards
+				inRed = 1;					//The number of big blinds the player tries to preserve when playing a hand
+				upperBetModifier = 2.5;		//This means the bot would bet between 1 and 1.2 times the expected bet value.
+				lowerBetModifier = 2;
+				break;
+			//bluffer
+			case 1:
+				bluffChance = 10 + BASE_BLUFF_CHANCE;	
+				foldmodifier = -1;				
+				discardModifier = 15;		
+				inRed = 2;					
+				upperBetModifier = 2;		
+				lowerBetModifier = 1.5;
+				break;
+			//neutral
+			case 2:
+				bluffChance = BASE_BLUFF_CHANCE;		
+				foldmodifier = -1;				
+				discardModifier = 20;		
+				inRed = 3;					
+				upperBetModifier = 1.2;		
+				lowerBetModifier = 1;
+				break;
+			//safe player
+			case 3:
+				bluffChance = 10;	
+				foldmodifier =  -1;				
+				discardModifier = 25;		
+				inRed = 4;					
+				upperBetModifier = 1.2;		
+				lowerBetModifier = 1;
+				break;
+			//very safe player
+			case 4:
+				bluffChance = 0;	
+				foldmodifier = -1;				
+				discardModifier = 30;		
+				inRed = 5;					
+				upperBetModifier = 1;		
+				lowerBetModifier = 1;
+				break;
 		}
 	}
 	

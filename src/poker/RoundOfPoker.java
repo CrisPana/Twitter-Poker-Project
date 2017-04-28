@@ -14,18 +14,24 @@ package poker;
 
 import java.util.ArrayList;
 
-
 /*
- * RULES
- * - player left of dealer gets small blind
- * - plyer left of small blind guy gets big blind
- * - cards are dealt clockwise, or to the dealer's left.
- * - we are using blinds (i.e. big blinds and small blinds)
- * 
+ * RoundOfPoker is a class that defines a round of poker
+ * It goes through the phases detailed below
+ * and will be instantiated few times to create a whole game of poker
  * */
 
 public class RoundOfPoker {
 
+	/*
+	 * Phases
+	 * 1. Five cards dealt to each player
+	 * 2. Blinds on the table
+	 * 3. Bettting Round #1 - starting at player left of big blind
+	 * 4. Discarding
+	 * 5. Betting Round #2 - left of dealer
+	 * 6. Showdown
+	 * */
+	
 	static public final int SMALL_BLIND = 5;
 	static public final int BIG_BLIND = 10;
 	public int dealerLocation = 0;
@@ -33,14 +39,6 @@ public class RoundOfPoker {
 	private int pot = 0;
 	private TwitterStream twitter;
 	
-	//Phases
-		//1. Five cards dealt to each player
-		//2. Blinds on the table
-		//3. Bettting Round #1 - starting at player left of big blind
-		//4. Discarding
-		//5. Betting Round #2 - left of dealer
-		//6. Showdown
-
 	public RoundOfPoker(DeckOfCards deck, ArrayList<PokerPlayer> players, TwitterStream stream) {
 		this.players = players;
 		deck.reset();

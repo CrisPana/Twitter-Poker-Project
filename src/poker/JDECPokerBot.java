@@ -46,10 +46,14 @@ public class JDECPokerBot {
 				keys[i] = line;
 				i++;
 			}	
+		} catch (FileNotFoundException e) {
+			System.out.println("keys.txt for Twitter authentication missing or cannot be read");
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		
 		//configuration and authentication
-		
 		ConfigurationBuilder cb = new ConfigurationBuilder();
 		cb.setDebugEnabled(true);
 		cb.setOAuthConsumerKey(keys[0]);
@@ -111,7 +115,6 @@ public class JDECPokerBot {
 			System.out.println("Could not start game with status");
 		}
     	
-
     	return 0;
     }
     

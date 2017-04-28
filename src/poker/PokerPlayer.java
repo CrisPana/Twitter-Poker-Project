@@ -12,6 +12,10 @@
 
 package poker;
 
+/*
+ * PokerPlayer is an abstract class that defines a basic poker player
+ * with the basic poker player methods and attributes
+ * */
 abstract class PokerPlayer {
 	
 	public String player_name;
@@ -33,10 +37,6 @@ abstract class PokerPlayer {
 		return ch;
 	}
 	
-	protected void fold(){
-		round_active = false;
-	}
-	
 	public int enterGame(int buyIn){
 		int startingBet = bet(buyIn);
 		round_active = true;
@@ -44,14 +44,6 @@ abstract class PokerPlayer {
 		return startingBet;
 	}
 
-	public void leaveGame(){
-		round_active = false;
-	}
-	
-	public void leaveRound(){
-		round_active = false;
-	}
-	
 	public int getChips(){
 		return chips;
 	}
@@ -75,14 +67,12 @@ abstract class PokerPlayer {
 	public String toString(){
 		return hand.toString();
 	}
+	
 	//return what kind of hand player has
 	private String checkHand(){
 		return hand.getHandType();
 	}
 
-	public boolean isBot(){
-		return isBot;
-	}
 	abstract int action(int betAmount, int minimumBet, int blind);
 	abstract int discard();
 }

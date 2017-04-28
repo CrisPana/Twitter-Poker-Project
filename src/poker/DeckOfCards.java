@@ -80,17 +80,4 @@ public class DeckOfCards { // deck of cards class
 		for(int i=0;i<deck.size();i++) output += deck.get(i).toString() + " ";
 		return output;
 	}
-	
-	public static void main(String[] args) {
-		DeckOfCards d = new DeckOfCards();
-		d.reset();
-		System.out.println("1: " + d.toString());
-		d.reset();
-		System.out.println("2: " + d.toString());
-		d.reset();
-		System.out.println("3: " + d.toString());
-		d.reset();
-		System.out.println("4: " + d.toString());
-		for (int i = 0; i < 10; i++) d.dealNext();
-	}
 }

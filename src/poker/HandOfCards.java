@@ -16,6 +16,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+/*
+ * this class, HandOfCards, is essentially the hand a player has
+ * it also deals with getting the value of the hand to be compared against
+ * other hands 
+ * also deals with the probabilities of discarding each card in the hand
+ * */
 public class HandOfCards {
 
 	static public final int HAND_SIZE = 5;

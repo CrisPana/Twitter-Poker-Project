@@ -14,8 +14,11 @@ package poker;
 
 import twitter4j.TwitterException;
 
-//import twitter4j.*;
-
+/*
+ * HumanPokerPlayer is a subclass of PokerPlayer class
+ * that allows for human interaction/user input 
+ * that will determine the actions suring the game of poker
+ * */
 public class HumanPokerPlayer extends PokerPlayer {
 	
 	//Player actions
@@ -93,7 +96,7 @@ public class HumanPokerPlayer extends PokerPlayer {
 				game_active = false;
 				return -1;
 			} else if(playerAction.equalsIgnoreCase(FOLD_ACTION)){
-				fold();
+				round_active = false;
 				return 0;
 			} else if(playerAction.equalsIgnoreCase(CHECK_ACTION)){	//if check, bets nothing
 				if(canCheck) return bet(0);
