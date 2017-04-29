@@ -22,11 +22,13 @@ import java.util.Scanner;
 
 import twitter4j.TwitterException;
 
-public class GameOfPoker {
+public class GameOfPoker extends Thread{
 	
 	private static final int MAX_PLAYERS = 5;
 	private static final int MIN_PLAYERS = 2;
 
+	private Thread t;
+	private String threadName;
 	private DeckOfCards deck;
 	private TwitterStream twitter;
 	private int numPlayers;
@@ -34,7 +36,8 @@ public class GameOfPoker {
 	public ArrayList<PokerPlayer> players = new ArrayList<PokerPlayer>();
 	public HumanPokerPlayer human;
 
-	public GameOfPoker(TwitterStream tw, int playerAmount) throws TwitterException, FileNotFoundException, IOException{
+	public GameOfPoker(String thread, TwitterStream tw, int playerAmount) throws TwitterException, FileNotFoundException, IOException{
+		threadName = thread;
 		deck = new DeckOfCards();
 		twitter = tw;
 		numPlayers = Math.max(playerAmount, MIN_PLAYERS);
@@ -49,6 +52,26 @@ public class GameOfPoker {
 		Collections.shuffle(players);	//shuffle players around the 'table'
 		round = new RoundOfPoker(deck, players);
 	}
+	
+	
+	
+	
+	public void run() {
+      System.out.println("Running " +  threadName );
+      startGame();
+      System.out.println("Thread " +  threadName + " exiting.");
+   }
+   
+   public void start () {
+      System.out.println("Starting " +  threadName );
+      if (t == null) {
+         t = new Thread (this, threadName);
+         t.start ();
+      }
+   }
+	   
+	   
+	   
 	
 	//Generate a random player
 	private AutomatedPokerPlayer getRandomAIPlayer() throws FileNotFoundException{
@@ -77,7 +100,7 @@ public class GameOfPoker {
 	//Remove bankrupt players from the player list
 	private void removeBankruptPlayers(){
 		for(int i=0; i<players.size(); i++){
-			if(players.get(i).getChips()<0){
+			if(players.get(i).getChips()<=0){
 				players.remove(i);
 			}
 		}
@@ -135,10 +158,14 @@ public class GameOfPoker {
 	
 	public static void main(String[] args) throws TwitterException, InterruptedException, FileNotFoundException, IOException {
 		
-		//testing - temp
-		GameOfPoker game = new GameOfPoker(null, 5);
-		for(int i=0; i<game.players.size(); i++){
-			System.out.println(game.players.get(i).player_name);
-		}
+		
+		LocalStream str1 = new LocalStream(null, null, null);
+		LocalStream str2 = new LocalStream(null, null, null);
+		GameOfPoker game1 = new GameOfPoker("thread1", str1, 5);
+		GameOfPoker game2 = new GameOfPoker("thread1", str2, 5);
+		
+		game1.start();
+		game2.start();
+		
 	}
 }

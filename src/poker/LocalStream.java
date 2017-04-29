@@ -9,16 +9,24 @@ import twitter4j.User;
 public class LocalStream extends TwitterStream {
 	
 	static private final int CHAR_LIMIT = 134;
+	static private final int BASE_TWEET_DELAY = 6;
 	
 	private String toSend;
 
 	LocalStream(Twitter twit, Status status, User twitterUser) {
 		super(twit, status, twitterUser);
+		toSend = "";
 		// TODO Auto-generated constructor stub
 	}
 
-	private synchronized void sendTweet(String str) {
-    	System.out.println(str);
+	private static synchronized void sendTweet(String str) {
+    	System.out.println("TWEET " + str);
+    	try {
+			Thread.sleep(BASE_TWEET_DELAY*1000);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
@@ -44,13 +52,21 @@ public class LocalStream extends TwitterStream {
 		toSend = "";
 	}
 	
-	
-	
-	@Override
-	public String parseResponse(){
+	private static synchronized String readInput(){
 		@SuppressWarnings("resource")
 		Scanner scanner = new Scanner(System.in);
 		String input = scanner.nextLine();
+		return input;
+	}
+	
+	@Override
+	public String parseResponse(){
+		String input = readInput();
+		try {
+			Thread.sleep(BASE_TWEET_DELAY*1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		return input;
 	}
 	
