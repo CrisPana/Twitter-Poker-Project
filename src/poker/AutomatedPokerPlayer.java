@@ -7,7 +7,7 @@
  * 		Eoghan O'Donnell	14464082
  * 		Crischelle Pana 	14366596
  * 
- * © 2017 
+ * Â© 2017 
  * */
 
 package poker;
@@ -293,7 +293,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		switch(t){
 			//strong bluffer
 			case 0:
-				bluffChance = 25 + BASE_BLUFF_CHANCE;	//Chance to bluff
+				bluffChance = BASE_BLUFF_CHANCE + 10;	//Chance to bluff
 				discardModifier = 10;		//Lower limit for discarding cards
 				inRed = 1;					//The number of big blinds the player tries to preserve when playing a hand
 				upperBetModifier = 2;		//The upper limit for valuing and betting.
@@ -301,7 +301,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 				break;
 			//bluffer
 			case 1:
-				bluffChance = 10 + BASE_BLUFF_CHANCE;				
+				bluffChance = BASE_BLUFF_CHANCE + 10;				
 				discardModifier = 15;		
 				inRed = 2;					
 				upperBetModifier = 1.5;		
@@ -317,7 +317,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 				break;
 			//safe player
 			case 3:
-				bluffChance = 10;			
+				bluffChance = BASE_BLUFF_CHANCE - 15;			
 				discardModifier = 25;		
 				inRed = 3;					
 				upperBetModifier = 1.2;		
@@ -325,7 +325,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 				break;
 			//very safe player
 			case 4:
-				bluffChance = 5;		
+				bluffChance = BASE_BLUFF_CHANCE - 15;		
 				discardModifier = 30;		
 				inRed = 4;					
 				upperBetModifier = 1.1;		
