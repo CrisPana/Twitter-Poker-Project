@@ -60,7 +60,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 	/**
 	 * Class constructor. Calls the {@link PokerPlayer} {@link PokerPlayer#PokerPlayer constructor}
 	 * and generates a random personality for the player.
-	 * @param name
+	 * @param name   The {@link String} containing the player's name.
 	 * @param deck   The {@link DeckOfCards deck} of cards being used to deal the player's hand.
 	 * @see #generatePersonality(int) generatePersonality
 	 */
@@ -293,7 +293,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		switch(t){
 			//strong bluffer
 			case 0:
-				bluffChance = BASE_BLUFF_CHANCE + 10;	//Chance to bluff
+				bluffChance = BASE_BLUFF_CHANCE + 15;	//Chance to bluff
 				discardModifier = 10;		//Lower limit for discarding cards
 				inRed = 1;					//The number of big blinds the player tries to preserve when playing a hand
 				upperBetModifier = 2;		//The upper limit for valuing and betting.
@@ -317,7 +317,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 				break;
 			//safe player
 			case 3:
-				bluffChance = BASE_BLUFF_CHANCE - 15;			
+				bluffChance = BASE_BLUFF_CHANCE - 10;			
 				discardModifier = 25;		
 				inRed = 3;					
 				upperBetModifier = 1.2;		

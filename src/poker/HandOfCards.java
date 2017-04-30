@@ -16,35 +16,44 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-/*
- * this class, HandOfCards, is essentially the hand a player has
- * it also deals with getting the value of the hand to be compared against
- * other hands 
- * also deals with the probabilities of discarding each card in the hand
- * */
+/**
+ * A standard hand of playing cards. The size of the hand is given by {@link #HAND_SIZE}. The class contains an
+ * {@link ArrayList} of {@link PlayingCard playing cards} and a reference to the {@link DeckOfCards deck} that
+ * cards are dealt from. The class contains functionality for {@link #sort sorting} the hand based on card value,
+ * determining the best type of poker hand that can be formed, {@link #getGameValue assigning a score} to the hand
+ * and calculating a {@link #getDiscardProbability discard probability} for a card in the hand.
+ * @author Dara Callinan
+ * @author Jazheel Luna
+ * @author Eoghan O'Donnell
+ * @author Crischelle Pana
+ */
 public class HandOfCards {
 
-	static public final int HAND_SIZE = 5;
+	public static final int HAND_SIZE = 5;
+	private static final int DECK_SIZE = 52;
+	private static final int CARD_TYPES = 13;
+	public static final int HIGH_HAND_DEFAULT = 0; // defaults are multiples of one million for easy identification
+	public static final int ONE_PAIR_DEFAULT = 1000000;
+	public static final int TWO_PAIR_DEFAULT = 2000000;
+	public static final int THREE_OF_A_KIND_DEFAULT = 3000000;
+	public static final int STRAIGHT_DEFAULT = 4000000;
+	public static final int FLUSH_DEFAULT = 5000000;
+	public static final int FULL_HOUSE_DEFAULT = 6000000;
+	public static final int FOUR_OF_A_KIND_DEFAULT = 7000000;
+	public static final int STRAIGHT_FLUSH_DEFAULT = 8000000;
+	public static final int ROYAL_FLUSH_DEFAULT = 9000000;
+	public static final int FOURTEEN_FIRST = 14; // multiplication constants are powers of 14 (as value of ace is 14)
+	public static final int FOURTEEN_SECOND = 196; // they could be lower but this is a very easy way to do and it won't affect calculation time
+	public static final int FOURTEEN_THIRD = 2744;
+	public static final int FOURTEEN_FOURTH = 38416;
+	
 	private DeckOfCards deck;
 	private ArrayList<PlayingCard> hand = new ArrayList<PlayingCard>();
 
-	static private final int DECK_SIZE = 52;
-	static private final int CARD_TYPES = 13;
-	static public final int HIGH_HAND_DEFAULT = 0; // defaults are multiples of one million for easy identification
-	static public final int ONE_PAIR_DEFAULT = 1000000;
-	static public final int TWO_PAIR_DEFAULT = 2000000;
-	static public final int THREE_OF_A_KIND_DEFAULT = 3000000;
-	static public final int STRAIGHT_DEFAULT = 4000000;
-	static public final int FLUSH_DEFAULT = 5000000;
-	static public final int FULL_HOUSE_DEFAULT = 6000000;
-	static public final int FOUR_OF_A_KIND_DEFAULT = 7000000;
-	static public final int STRAIGHT_FLUSH_DEFAULT = 8000000;
-	static public final int ROYAL_FLUSH_DEFAULT = 9000000;
-	static public final int FOURTEEN_FIRST = 14; // multiplication constants are powers of 14 (as value of ace is 14)
-	static public final int FOURTEEN_SECOND = 196; // they could be lower but this is a very easy way to do and it won't affect calculation time
-	static public final int FOURTEEN_THIRD = 2744;
-	static public final int FOURTEEN_FOURTH = 38416;
-
+	/**
+	 * Class constructor. Initialises the {@link #hand} by dealing {@link PlayingCard playing cards}.
+	 * @param deck   The deck from which cards will be dealt.
+	 */
 	public HandOfCards(DeckOfCards deck) {
 		this.deck = deck;
 		int i = 0;
@@ -55,10 +64,17 @@ public class HandOfCards {
 		sort();
 	}
 
+	/**
+	 * Gets the {@link DeckOfCards deck} from which this hand was dealt.
+	 * @return The {@link DeckOfCards deck} which dealt this hand.
+	 */
 	public DeckOfCards returnDeck() {
 		return deck;
 	}
 
+	/**
+	 * Sorts the hand based on the {@link PlayingCard card} game values.
+	 */
 	private void sort() {
 		Collections.sort(hand, new Comparator<PlayingCard>() {
 			@Override
@@ -68,6 +84,10 @@ public class HandOfCards {
 		});
 	}
 
+	/**
+	 * Checks if the hand contains a straight.
+	 * @return A {@code boolean}, true if the hand contains a straight, false otherwise.
+	 */
 	private boolean containsStraight() {
 		int val = hand.get(0).getFaceValue();
 
@@ -84,6 +104,10 @@ public class HandOfCards {
 		return true;
 	}
 
+	/**
+	 * Checks if the hand contains a flush.
+	 * @return A {@code boolean}, true if the hand contains a flush, false otherwise.
+	 */
 	private boolean containsFlush() {
 		char suit = hand.get(0).getSuit();
 
@@ -95,16 +119,28 @@ public class HandOfCards {
 		return true;
 	}
 
+	/**
+	 * Checks if the hand is a royal flush.
+	 * @return A {@code boolean}, true if the hand is a royal flush, false otherwise.
+	 */
 	public boolean isRoyalFlush() {
 		boolean hasAceKing = hand.get(0).getFaceValue() == 1 && hand.get(1).getFaceValue() == 13;
 		return containsStraight() && containsFlush() && hasAceKing;
 	}
 
+	/**
+	 * Checks if the hand is a straight flush but not a royal flush.
+	 * @return A {@code boolean}, true if the hand is a straight flush, false otherwise.
+	 */
 	public boolean isStraightFlush() {
 		boolean hasAceKing = hand.get(0).getFaceValue() == 1 && hand.get(1).getFaceValue() == 13;
 		return containsStraight() && containsFlush() && !hasAceKing;
 	}
 
+	/**
+	 * Checks if the hand is a four of a kind and not a more valuable hand.
+	 * @return A {@code boolean}, true if the hand is a four of a kind, false otherwise.
+	 */
 	public boolean isFourOfAKind() {
 		if (hand.get(0).getFaceValue() == hand.get(3).getFaceValue()
 				|| hand.get(1).getFaceValue() == hand.get(4).getFaceValue())
@@ -113,6 +149,10 @@ public class HandOfCards {
 			return false;
 	}
 
+	/**
+	 * Checks if the hand is a full house and not a more valuable hand.
+	 * @return A {@code boolean}, true if the hand is a full house, false otherwise.
+	 */
 	public boolean isFullHouse() {
 		if ((hand.get(0).getFaceValue() == hand.get(2).getFaceValue()
 				&& hand.get(3).getFaceValue() == hand.get(4).getFaceValue())
@@ -123,14 +163,26 @@ public class HandOfCards {
 			return false;
 	}
 
+	/**
+	 * Checks if the hand is a flush and not a more valuable hand.
+	 * @return A {@code boolean}, true if the hand is a flush, false otherwise.
+	 */
 	public boolean isFlush() {
 		return containsFlush() && !containsStraight();
 	}
 
+	/**
+	 * Checks if the hand is a straight and not a more valuable hand.
+	 * @return A {@code boolean}, true if the hand is a straight, false otherwise.
+	 */
 	public boolean isStraight() {
 		return containsStraight() && !containsFlush();
 	}
 
+	/**
+	 * Checks if the hand is a three of a kind and not a more valuable hand.
+	 * @return A {@code boolean}, true if the hand is a three of a kind, false otherwise.
+	 */
 	public boolean isThreeOfAKind() {
 		if (isFourOfAKind() || isFullHouse())
 			return false;
@@ -146,7 +198,10 @@ public class HandOfCards {
 		return false;
 	}
 
-	// Determines whether hand is a two pair (and not a more valuable hand)
+	/**
+	 * Checks if the hand is a two pair and not a more valuable hand.
+	 * @return A {@code boolean}, true if the hand is a two pair, false otherwise.
+	 */
 	public boolean isTwoPair() {
 		// If cards make a higher value hand containing matching cards, return
 		// false
@@ -166,8 +221,10 @@ public class HandOfCards {
 		return false;
 	}
 
-	// Returns boolean determining if the hand has One pair (and is not a more
-	// valuable hand)
+	/**
+	 * Checks if the hand is a one pair and not a more valuable hand.
+	 * @return A {@code boolean}, true if the hand is a one pair, false otherwise.
+	 */
 	public boolean isOnePair() {
 		// If cards make a higher value hand containing matching cards, return
 		// false
@@ -185,9 +242,10 @@ public class HandOfCards {
 		return false;
 	}
 
-	// Determines if the hand is only a high hand (by ensuring that it is not
-	// any
-	// of the other hands.
+	/**
+	 * Checks if the hand is a high hand and not a more valuable hand.
+	 * @return A {@code boolean}, true if the hand is a high hand, false otherwise.
+	 */
 	public boolean isHighHand() {
 		// If all other hand methods return false, then the hand is a high hand
 		if (!isOnePair() && !isTwoPair() && !isThreeOfAKind() && !isFourOfAKind() && !isFullHouse()
@@ -197,8 +255,10 @@ public class HandOfCards {
 			return false;
 	}
 
-	// Determine whether the hand is a busted straight (1 card needed to make a
-	// straight)
+	/**
+	 * Checks if the hand is a busted straight (One card needed to make a straight).
+	 * @return A {@code boolean}, true if the hand is a busted straight, false otherwise.
+	 */
 	public boolean isBustedStraight() {
 		// Return false for any hand other than high hand, one pair or flush. -
 		// All other hands either
@@ -254,8 +314,10 @@ public class HandOfCards {
 		}
 	}
 
-	// Determine whether the hand is a busted flush (1 card needed to make a
-	// flush)
+	/**
+	 * Checks if the hand is a busted flush (One card needed to make a flush).
+	 * @return A {@code boolean}, true if the hand is a busted straight, false otherwise.
+	 */
 	public boolean isBustedFlush() {
 		// Return false for any hand other than high hand, one pair or straight.
 		// - All other hands either
@@ -301,7 +363,10 @@ public class HandOfCards {
 		}
 	}
 
-	// Get card to discard in busted straight
+	/**
+	 * Gets the position of the {@link PlayingCard card} that breaks the straight if one exists, otherwise returns -1.
+	 * @return The index of the broken straight card in the {@link #hand}.
+	 */
 	private int getBustedStraightCard() {
 		
 		if (!isBustedStraight()) return -1;	// If not a busted straight, cannot discard any card
@@ -344,7 +409,10 @@ public class HandOfCards {
 		return discard;
 	}
 
-	// Get card to discard in busted flush
+	/**
+	 * Gets the position of the {@link PlayingCard card} that breaks the flush if one exists, otherwise returns -1.
+	 * @return The index of the broken straight card in the {@link #hand}.
+	 */
 	private int getBustedFlushCard() {
 		// If not a busted straight, cannot discard any card
 		if (!isBustedFlush()) return -1;
@@ -364,6 +432,16 @@ public class HandOfCards {
 
 	}
 
+	/**
+	 * Calculates the game value for the hand. This value is calculated by determining the type
+	 * of the hand and relating that to a constant amount. Then depending on the hand type,
+	 * value is added based on the values of the {@link PlayingCard cards} in various ways.
+	 * The value is constructed such that a better type of hand will always have a higher game
+	 * value than a lower type of hand, and individual cards are weighted such that the largest
+	 * groups of cards are weighted highest and cards are weighted in order of decreasing game
+	 * value, as in standard poker rules.
+	 * @return An {@code int}, the game value of the hand.
+	 */
 	public int getGameValue() {
 		// returns royal flush default
 		if (isRoyalFlush()) return ROYAL_FLUSH_DEFAULT;
@@ -452,8 +530,13 @@ public class HandOfCards {
 					+ hand.get(1).getGameValue() * FOURTEEN_THIRD + hand.get(2).getGameValue() * FOURTEEN_SECOND
 					+ hand.get(3).getGameValue() * FOURTEEN_FIRST + hand.get(4).getGameValue();
 	}
-
-	// Return the discard probability for a card in a high hand
+	
+	/**
+	 * Calculates the discard probability for a card at the specified position in a high hand.
+	 * @param cardPos   The position of the card to check.
+	 * @return An {@code int} representing the probability of discarding the card.
+	 * @see #getDiscardProbability(int)
+	 */
 	private int getDiscardProbHighHand(int cardPos) {
 		boolean potentialFlush = isBustedFlush();
 		boolean potentialStraight = isBustedStraight();
@@ -478,8 +561,13 @@ public class HandOfCards {
 				return 40 - cardGameVal;
 		}
 	}
-
-	// Return the discard probability for a card in a one pair hand
+	
+	/**
+	 * Calculates the discard probability for a card at the specified position in a one pair hand.
+	 * @param cardPos   The position of the card to check.
+	 * @return An {@code int} representing the probability of discarding the card.
+	 * @see #getDiscardProbability(int)
+	 */
 	private int getDiscardProbOnePair(int cardPos) {
 		boolean potentialFlush = isBustedFlush();
 		boolean potentialStraight = isBustedStraight();
@@ -515,8 +603,13 @@ public class HandOfCards {
 			}
 		}
 	}
-
-	// Return the discard probability for a card in a two pair hand
+	
+	/**
+	 * Calculates the discard probability for a card at the specified position in a two pair hand.
+	 * @param cardPos   The position of the card to check.
+	 * @return An {@code int} representing the probability of discarding the card.
+	 * @see #getDiscardProbability(int)
+	 */
 	private int getDiscardProbTwoPair(int cardPos) {
 		int cardGameVal = hand.get(cardPos).getGameValue();
 		// Prioritize discarding any card that is not in the pair
@@ -530,8 +623,13 @@ public class HandOfCards {
 			return (int) (100 - (Math.pow(cardGameVal, 5) / 5000)) + 20;
 		}
 	}
-
-	// Return the discard probability for a card in a three of a kind hand
+	
+	/**
+	 * Calculates the discard probability for a card at the specified position in a three of a kind hand.
+	 * @param cardPos   The position of the card to check.
+	 * @return An {@code int} representing the probability of discarding the card.
+	 * @see #getDiscardProbability(int)
+	 */
 	private int getDiscardProbThreeOfAKind(int cardPos) {
 		int cardGameVal = hand.get(cardPos).getGameValue();
 		// Keep all cards in the set
@@ -548,9 +646,15 @@ public class HandOfCards {
 			return (int) (100 - (Math.pow(cardGameVal, 5) / 5000)) + 20;
 		}
 	}
-
-	// Return the discard probability for a card in a straight (0 unless flush
-	// can be made)
+	
+	/**
+	 * Calculates the discard probability for a card at the specified position in a straight.
+	 * This will always be zero unless a flush can be made, as it is too difficult to make any
+	 * other higher value hands.
+	 * @param cardPos   The position of the card to check.
+	 * @return An {@code int} representing the probability of discarding the card.
+	 * @see #getDiscardProbability(int)
+	 */
 	private int getDiscardProbStraight(int cardPos) {
 		if (isBustedFlush() && cardPos == getBustedFlushCard()) {
 			// System.out.println("H");
@@ -560,8 +664,14 @@ public class HandOfCards {
 		} 
 		else return 0;
 	}
-
-	// Return the discard probability for a card in a flush
+	
+	/**
+	 * Calculates the discard probability for a card at the specified position in a flush.
+	 * Can return a small non-zero chance if a straight flush can be made.
+	 * @param cardPos   The position of the card to check.
+	 * @return An {@code int} representing the probability of discarding the card.
+	 * @see #getDiscardProbability(int)
+	 */
 	private int getDiscardProbFlush(int cardPos) {
 		if (isBustedStraight() && cardPos == getBustedStraightCard()) {
 			// Return approximate probability of making a straight flush (very
@@ -571,8 +681,13 @@ public class HandOfCards {
 		} 
 		else return 0;
 	}
-
-	// Return the discard probability for a card in a four of a kind hand
+	
+	/**
+	 * Calculates the discard probability for a card at the specified position in a four of a kind.
+	 * @param cardPos   The position of the card to check.
+	 * @return An {@code int} representing the probability of discarding the card.
+	 * @see #getDiscardProbability(int)
+	 */
 	private int getDiscardProbFourOfAKind(int cardPos) {
 		int cardGameVal = hand.get(cardPos).getGameValue();
 		// Keep all cards in the four of a kind
@@ -586,8 +701,13 @@ public class HandOfCards {
 			return (int) (100 - (Math.pow(cardGameVal, 5) / 5000)) + 20;
 		}
 	}
-
-	// Returns integer representing whether the card should be discarded
+	
+	/**
+	 * Calculates an integer in the range {@code 0 - 100} which represents the probability of a player
+	 * discarding the {@link PlayingCard card} at the specified position.
+	 * @param cardPosition   The position of the card to check.
+	 * @return The probability of discarding the card at this position.
+	 */
 	public int getDiscardProbability(int cardPosition) {
 		// Return 0 if cardPosition outside range/card is null
 		if (cardPosition < 0 || cardPosition > HAND_SIZE) return 0;
@@ -614,6 +734,12 @@ public class HandOfCards {
 	}
 	
 	//Returns cards at an index to the deck, and deals new cards.
+	/**
+	 * Returns {@link PlayingCard cards} at the specified indices to the {@link #deck deck}, and deals
+	 * new cards to replace them. Sorts the hand once the cards have been dealt.
+	 * @param indices   An array of positions of the cards in the {@link #hand hand} to be discarded. 
+	 * @param amountToDiscard   The amount of cards to be discarded.
+	 */
 	public void discard(int[] indices, int amountToDiscard){
 		for(int i=0; i<amountToDiscard; i++){
 			//Return card
@@ -624,15 +750,14 @@ public class HandOfCards {
 		}
 		sort();
 	}
-
-	// for testing purposes
+	
 	public String toString() {
 		String output = "";
 		for (int i = 0; i < 5; i++)
 			output += hand.get(i).toString() + " ";
 		return output;
 	}
-
+	
 	// for testing purposes
 	public String getHandType() {
 		if (isRoyalFlush())
@@ -656,5 +781,4 @@ public class HandOfCards {
 		else
 			return "High Hand\t";
 	}
-
 }

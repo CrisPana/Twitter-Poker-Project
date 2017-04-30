@@ -13,7 +13,7 @@
 package poker;
 
 /**
- * Represents a standard playing card with a {@link #suit}, {@link #faceValue face value}
+ * Defines a standard playing card with a {@link #suit suit}, {@link #faceValue face value}
  * and {@link #gameValue game value}. The game value is used to value the Ace as the highest
  * card. Also has a {@link #type} attribute, a {@link String} of the card type.
  * @author Dara Callinan

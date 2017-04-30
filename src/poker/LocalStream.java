@@ -6,6 +6,16 @@ import twitter4j.Status;
 import twitter4j.Twitter;
 import twitter4j.User;
 
+/**
+ * A subclass of {@link TwitterStream} but replaces the twitter input and output with console
+ * input and output by overriding the {@link #parseResponse()} and {@link #addToTweet(String)}
+ * methods. This class can be used for testing the program as there is no use of the Twitter API
+ * and as such, no need to wait for the API rate limits.
+ * @author Dara Callinan
+ * @author Jazheel Luna
+ * @author Eoghan O'Donnell
+ * @author Crischelle Pana
+ */
 public class LocalStream extends TwitterStream {
 	
 	static private final int CHAR_LIMIT = 134;
@@ -13,18 +23,28 @@ public class LocalStream extends TwitterStream {
 	
 	private String toSend;
 
+	/**
+	 * Class constructor. Calls the {@link TwitterStream} {@link TwitterStream#TwitterStream constructor}
+	 * and initialises {@link #toSend}.
+	 * @param twit   The {@link Twitter} object to be used.
+	 * @param status   The initial {@link Status}.
+	 * @param twitterUser   The {@link User} in the conversation.
+	 */
 	LocalStream(Twitter twit, Status status, User twitterUser) {
 		super(twit, status, twitterUser);
 		toSend = "";
-		// TODO Auto-generated constructor stub
 	}
 
+	/**
+	 * Prints a tweet to the console, starting with an identifying string to distinguish
+	 * separate tweets.
+	 * @param str   The tweet to be printed.
+	 */
 	private static synchronized void sendTweet(String str) {
     	System.out.println("TWEET " + str);
     	try {
 			Thread.sleep(BASE_TWEET_DELAY*1000);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -46,12 +66,16 @@ public class LocalStream extends TwitterStream {
 		}
 	}
 	
-	//Force current string to send
+	@Override
 	public void completeMessage(){
 		sendTweet(toSend);
 		toSend = "";
 	}
 	
+	/**
+	 * Reads input from the console.
+	 * @return The {@link String} from the console.
+	 */
 	private static synchronized String readInput(){
 		@SuppressWarnings("resource")
 		Scanner scanner = new Scanner(System.in);
@@ -68,10 +92,5 @@ public class LocalStream extends TwitterStream {
 			e.printStackTrace();
 		}
 		return input;
-	}
-	
-	public static void main(String[] args) {
-		LocalStream l = new LocalStream(null, null, null);
-		l.parseResponse();
 	}
 }

@@ -16,17 +16,34 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
-public class DeckOfCards { // deck of cards class
+/**
+ * Defines a standard deck of cards using an {@link ArrayList} of {@link PlayingCard}
+ * objects. Contains functionality for shuffling the deck, dealing cards and returning
+ * cards to the deck.
+ * @author Dara Callinan
+ * @author Jazheel Luna
+ * @author Eoghan O'Donnell
+ * @author Crischelle Pana
+ */
+public class DeckOfCards {
 	
 	static public final int SIZE_OF_DECK = 52; // constant for size of deck
 	static public final int CARDS_IN_SUIT = 13;
+	
 	private ArrayList<PlayingCard> deck = new ArrayList<PlayingCard>(); // deck
 	private int dealt;
 
+	/**
+	 * Class constructor. Calls {@link #reset()} which assigns a new list of {@link PlayingCard}
+	 * objects to the {@link #deck} list.
+	 */
 	public DeckOfCards() {
 		reset();
 	}
 
+	/**
+	 * Resets the deck by constructing a brand new deck of {@link PlayingCard playing cards}.
+	 */
 	public synchronized void reset() {
 		dealt = 0;
 		deck.clear();
@@ -41,7 +58,10 @@ public class DeckOfCards { // deck of cards class
 		shuffle(); // shuffles deck
 	}
 
-	// swaps two random positions in the deck
+	/**
+	 * Shuffles the deck. Two random cards in the deck have their positions swapped.
+	 * This is done as many times as the square of the size of the deck.
+	 */
 	public void shuffle() {
 
 		Random rand = new Random();
@@ -52,11 +72,11 @@ public class DeckOfCards { // deck of cards class
 			Collections.swap(deck, randomNum1, randomNum2);
 		}
 	}
-
-	/* this method removes the first card from the deck 
-	 * and increments the dealt counter
-	 * if dealt hits 52 we reset the deck
-	 * */
+	
+	/**
+	 * Removes the first card from the deck and returns it.
+	 * @return The first {@link PlayingCard} object in the {@link #deck} list.
+	 */
 	public synchronized PlayingCard dealNext() {
 		synchronized (deck) {
 			PlayingCard nextCard = deck.remove(0);
@@ -69,6 +89,10 @@ public class DeckOfCards { // deck of cards class
 		}
 	}
 
+	/**
+	 * Returns a card to the deck.
+	 * @param discarded   The discarded card to be returned to the deck.
+	 */
 	public synchronized void returnCard(PlayingCard discarded) {
 		synchronized (deck) {
 			deck.add(discarded);

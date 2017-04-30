@@ -24,7 +24,6 @@ import java.util.List;
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
 
-
 /**
  * A poker bot which searches for Twitter statuses using the Twitter API, and creates playable 
  * {@link GameOfPoker} instances.
