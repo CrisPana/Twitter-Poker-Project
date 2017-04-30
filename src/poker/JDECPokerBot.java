@@ -37,19 +37,19 @@ import twitter4j.conf.ConfigurationBuilder;
 public class JDECPokerBot {
 	
 	static private final int BASE_SCAN_DELAY = 30;		//Search for game every minute
-	static private final int MAX_GAMES = 2;				//Maximum number of simultaneous games
+	static private final int MAX_GAMES = 3;				//Maximum number of simultaneous games
 	
 	Date searchBegin;
 	Twitter twitter;
 	List<Status> games;
 	List<String> playing;
 	GameOfPoker[] activeGames;
-	
+
 	public JDECPokerBot() throws TwitterException, FileNotFoundException, IOException {
 		searchBegin = new Date();
 		playing = new ArrayList<String>();
 		activeGames = new GameOfPoker[MAX_GAMES];
-
+	
 		//getting keys from file
 		String[] keys = new String[4];
 		int i = 0;
@@ -73,85 +73,83 @@ public class JDECPokerBot {
 		TwitterFactory tf = new TwitterFactory(cb.build());
 		twitter = tf.getInstance();
 	}
-	
+
 	/**
-     * Searches for statuses with the 'join game' string.
+	 * Searches for statuses with the 'join game' string.
 	 * 
 	 * @return <code>int</code> - the amount of games found
-	 * @throws TwitterException
-	 * @throws InterruptedException
+	 * @throws TwitterException   If Twitter request is denied
+	 * @throws InterruptedException   If a {@link GameOfPoker} thread is interrupted
 	 */
-    public int searchForGame() throws TwitterException, InterruptedException {
+	public int searchForGame() throws TwitterException, InterruptedException {
 		games = null;
 		//Until a game is found
-    	//while(games == null || games.size()<1){
+		//while(games == null || games.size()<1){
 		Query query = new Query("#PlayPokerWithJDEC");
-    	QueryResult result = twitter.search(query);
-    	games = result.getTweets();
-    	//Remove tweets
-    	removeUnplayableTweets();
-    	//if(games.size()<1) Thread.sleep(BASE_SCAN_DELAY*1000);
-    	//}
-    	return games.size();
-    }
-    
-    /**
-     * Removes old statuses, duplicate statuses and statuses by active players from {@link #games}
-     * 
-     * @see {@link #searchForGame()}
-     */
-    private void removeUnplayableTweets(){
-    	for(int i=0; i<games.size(); i++){
-    		Status game = games.get(i);
-    		boolean removed = false;
-    		//Remove tweets by same user
-    		for(int j=0; j<i; j++){
-    			if(games.get(j).getUser()==games.get(i).getUser()){
-    				games.remove(i);
-    				i = i-1;
-    				removed = true;
-    			}
-    		}
-    		if(removed) continue;
-    		//Remove tweets by user who is currently in a game
-    		for(int j=0; j<playing.size(); j++){
-    			if(playing.get(j)!=null && playing.get(j).equals(game.getUser().getScreenName())){
-    				games.remove(i);
-    				i = i-1;
-    				removed = true;
-    			}
-    		}
-    		if(removed) continue;
-    		Date created = games.get(i).getCreatedAt();
-    		if(created.before(searchBegin)){
-    			//games.remove(i);
-    			//i = i-1;
-    		}
-    	}
-    }
-    
-    /**
-     * Create a new game of poker with a specified status.
-     * 
-     * @param threadName	The {@link Thread} name for the game.
-     * @param status - the {@link Status} status used to create the game.
-     * @return Newly created {@link GameOfPoker}
-     * @throws TwitterException
-     */
-    private GameOfPoker newGame(String threadName, Status status) throws TwitterException {
-    	
-    	//** Use twitter stream for twitter input/output or local stream for console input/output
-    	//TwitterStream stream = new TwitterStream(twitter, game, game.getUser());
-    	LocalStream stream = new LocalStream(twitter, status, status.getUser());
-        
-    	//Thread.sleep(BASE_TWEET_DELAY*1000);
-    	GameOfPoker pokerGame = null;
+		QueryResult result = twitter.search(query);
+		games = result.getTweets();
+		//Remove tweets
+		removeUnplayableTweets();
+		//if(games.size()<1) Thread.sleep(BASE_SCAN_DELAY*1000);
+		//}
+		return games.size();
+	}
+	
+	/**
+	 * Removes old statuses, duplicate statuses and statuses by active players from {@link #games}
+	 * 
+	 * @see #searchForGame()
+	 */
+	private void removeUnplayableTweets(){
+		for(int i=0; i<games.size(); i++){
+			Status game = games.get(i);
+			boolean removed = false;
+			//Remove tweets by same user
+			for(int j=0; j<i; j++){
+				if(games.get(j).getUser()==games.get(i).getUser()){
+					games.remove(i);
+					i = i-1;
+					removed = true;
+				}
+			}
+			if(removed) continue;
+			//Remove tweets by user who is currently in a game
+			for(int j=0; j<playing.size(); j++){
+				if(playing.get(j)!=null && playing.get(j).equals(game.getUser().getScreenName())){
+					games.remove(i);
+					i = i-1;
+					removed = true;
+				}
+			}
+			if(removed) continue;
+			Date created = games.get(i).getCreatedAt();
+			if(created.before(searchBegin)){
+				//games.remove(i);
+				//i = i-1;
+			}
+		}
+	}
+	
+	/**
+	 * Create a new game of poker with a specified status.
+	 * 
+	 * @param threadName	The {@link Thread} name for the game.
+	 * @param status	The {@link Status} used to create the game.
+	 * @return Newly created {@link GameOfPoker}
+	 * @throws TwitterException   If Twitter request is denied
+	 */
+	private GameOfPoker newGame(String threadName, Status status) throws TwitterException {
+		
+		//** Use twitter stream for twitter input/output or local stream for console input/output
+		//TwitterStream stream = new TwitterStream(twitter, game, game.getUser());
+		LocalStream stream = new LocalStream(twitter, status, status.getUser());
+	    
+		//Thread.sleep(BASE_TWEET_DELAY*1000);
+		GameOfPoker pokerGame = null;
 		try {
 			pokerGame = new GameOfPoker(threadName, stream, 5);
 		} catch (FileNotFoundException e) {
 			System.out.println("botnames.txt is missing or cannot be read");
-			e.printStackTrace();
-		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		if(pokerGame!=null){
@@ -162,15 +160,15 @@ public class JDECPokerBot {
 			System.out.println("Could not create game with status");
 			return null;
 		}
-    }
-    
-    /**
-     * Creates and runs up to {@link #MAX_GAMES} {@link GameOfPoker} objects but will not
-     * replace any currently running games in {@link #activeGames}.
-     * @throws TwitterException
-     */
-    public void createGames() throws TwitterException{
-    	//Create and run games
+	}
+	
+	/**
+	 * Creates and runs up to {@link #MAX_GAMES} {@link GameOfPoker} objects but will not
+	 * replace any currently running games in {@link #activeGames}.
+	 * @throws TwitterException   If Twitter request is denied
+	 */
+	public void createGames() throws TwitterException{
+		//Create and run games
 		for(int i=0; i<MAX_GAMES; i++){
 			if(activeGames[i]==null && games.size()>0){
 				String threadName = "Thread " + (i+1);
@@ -180,42 +178,41 @@ public class JDECPokerBot {
 				activeGames[i].start();
 			}
 		}
-    }
-    
-    /**
-     * Sets any terminated {@link GameOfPoker} threads in {@link #activeGames} to null and removes
-     * the player's username from {@link #playing}, so that new games can be started.
-     */
-    public void clearCompletedGames(){
-    	//Set finished games to null
+	}
+	
+	/**
+	 * Sets any terminated {@link GameOfPoker} threads in {@link #activeGames} to null and removes
+	 * the player's username from {@link #playing}, so that new games can be started.
+	 */
+	public void clearCompletedGames(){
+		//Set finished games to null
 		for(int i=0; i<MAX_GAMES; i++){
 			if(activeGames[i]!=null && activeGames[i].getThread().getState()==Thread.State.TERMINATED){
-				playing.remove(activeGames[i].human.player_name);
+				playing.remove(activeGames[i].getHumanPlayer().player_name);
 				activeGames[i] = null;
 			}
 		}
-    }
+	}
 	
-   //if something goes wrong, we might see a TwitterException
-    public static void main(String... args) throws TwitterException, InterruptedException, FileNotFoundException, IOException{
-
-    	JDECPokerBot bot = new JDECPokerBot();
-    	
-    	boolean singleGame = false;
-    	if(singleGame){
-    		System.out.println("Searching for new game");
-    		bot.searchForGame();
-	    	bot.newGame("Thread 1", bot.games.get(0));
+    //if something goes wrong, we might see a TwitterException
+	public static void main(String... args) throws TwitterException, InterruptedException, FileNotFoundException, IOException{
+	
+		JDECPokerBot bot = new JDECPokerBot();
+		
+		boolean singleGame = true;
+		if(singleGame){
+			System.out.println("Searching for new game");
+			bot.searchForGame();
+	    	bot.newGame("Thread 1", bot.games.get(0)).start();
 	    	bot.searchBegin = new Date();
 	    	return;
-    	}
-    	
-    	while(!singleGame){
-    		bot.searchForGame();
-    		bot.clearCompletedGames();
-    		bot.createGames();
-    		Thread.sleep(BASE_SCAN_DELAY*1000);
-    	}
-    }
-
+		}
+		
+		while(!singleGame){
+			bot.searchForGame();
+			bot.clearCompletedGames();
+			bot.createGames();
+			Thread.sleep(BASE_SCAN_DELAY*1000);
+		}
+	}
 }

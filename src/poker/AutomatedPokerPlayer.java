@@ -175,9 +175,9 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 			if(r<bluffChance){
 				r = rand.nextInt(2);
 				if(r==0){
-					return toCall + getBettingChips(toCall, minimumBet, blind, MID_BET);
+					return bet(toCall + getBettingChips(toCall, minimumBet, blind, MID_BET));
 				} else {
-					return toCall + getBettingChips(toCall, minimumBet, blind, MID_BET);
+					return bet(toCall + getBettingChips(toCall, minimumBet, blind, MID_BET));
 				}
 			} else {	//Check or fold
 				if(canCheck){
