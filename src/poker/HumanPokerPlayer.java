@@ -14,11 +14,15 @@ package poker;
 
 import twitter4j.TwitterException;
 
-/*
- * HumanPokerPlayer is a subclass of PokerPlayer class
- * that allows for human interaction/user input 
- * that will determine the actions suring the game of poker
- * */
+/**
+ * An subclass of {@link PokerPlayer} that allows for human interaction and user input.
+ * The input used from the {@link TwitterStream} {@link #twitter attribute} determines
+ * the actions taken during a {@link RoundOfPoker round of poker}.
+ * @author Dara Callinan
+ * @author Jazheel Luna
+ * @author Eoghan O'Donnell
+ * @author Crischelle Pana
+ */
 public class HumanPokerPlayer extends PokerPlayer {
 	
 	//Player actions
@@ -31,16 +35,28 @@ public class HumanPokerPlayer extends PokerPlayer {
 	private static final String LEAVE_GAME = "leave";
 	private static final int MAX_DISCARDS = 3;
 	
+	/** The {@link TwitterStream} object used for output and user input. */
 	TwitterStream twitter;
 
+	/**
+	 * Class constructor. Calls the {@link PokerPlayer} {@link PokerPlayer#PokerPlayer constructor}
+	 * and initialises the {@link TwitterStream} {@link #twitter attribute} for input and output.
+	 * @param tw   The {@link TwitterStream} object for input and output.
+	 * @param deck   The {@link DeckOfCards deck} of cards being used to deal the player's hand.
+	 */
 	HumanPokerPlayer(TwitterStream tw, DeckOfCards deck) {
 		super(tw.user.getScreenName(), deck);
-		isBot = false;
 		game_active = true;
 		twitter = tw;
 	}
 	
-	//Returns an array of words from twitter to be used as input
+	/**
+	 * Retrieves and parses input from the {@link TwitterStream} {@link #twitter attribute}. The
+	 * input is broken down into an array of words, where Twitter '@' strings and punctuation are
+	 * removed.
+	 * @return An array of words from the input string.
+	 * @see TwitterStream#parseResponse()
+	 */
 	private String[] getTwitterInput(){
 		//Get action string from twitter
 		String[] twitterWords;
@@ -48,7 +64,7 @@ public class HumanPokerPlayer extends PokerPlayer {
 			twitterWords = twitter.parseResponse().split("\\s+");
 		} catch (TwitterException | InterruptedException e) {
 			e.printStackTrace();
-			return new String[] {"fold"};
+			return new String[] {"leave"};
 		}
 		//Remove punctuation, remove '@'s
 		int wordIndex = 0;

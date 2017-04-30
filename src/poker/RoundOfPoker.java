@@ -20,6 +20,14 @@ import java.util.ArrayList;
  * and will be instantiated few times to create a whole game of poker
  * */
 
+/**
+ * Defines a round of poker. {@link #startRound} completes an entire round.
+ * 
+ * @author Dara Callinan
+ * @author Jazheel Luna
+ * @author Eoghan O'Donnell
+ * @author Crischelle Pana
+ */
 public class RoundOfPoker {
 
 	/*
@@ -39,6 +47,16 @@ public class RoundOfPoker {
 	private int pot = 0;
 	private TwitterStream twitter;
 	
+	/**
+	 * Class constructor. Sets the {@link #bigBlind} and {@link #smallBlind} values and the {@link #players} list.
+	 * Resets the {@link DeckOfCards} in use, before dealing new cards to each player in the {@link #players} list.
+	 * Uses a {@link TwitterStream} for input and output.
+	 * @param deck   The {@link DeckOfCards} being used in the game.
+	 * @param players   A list of {@link PokerPlayer} objects representing the players in the game.
+	 * @param stream   The {@link TwitterStream} to be used for input and output.
+	 * @param bigBlind   The current big blind in the game.
+	 * @param smallBlind   The current small blind in the game.
+	 */
 	public RoundOfPoker(DeckOfCards deck, ArrayList<PokerPlayer> players, TwitterStream stream, int bigBlind, int smallBlind) {
 		this.bigBlind = bigBlind;
 		this.smallBlind = smallBlind;
@@ -50,15 +68,18 @@ public class RoundOfPoker {
 		}
 		twitter = stream;
 	}
-	//Alternative constructor for AI only games
-	public RoundOfPoker(DeckOfCards deck, ArrayList<PokerPlayer> players) {
-		this.players = players;
-		for(int i=0; i<players.size(); i++){
-			players.get(i).round_active = true;
-		}
-	}
 	
-	//Complete a round of betting starting with an acting player and minimum bet (usually big blind or zero)
+	/**
+	 * Completes a round of betting, starting with an acting player and minimum bet. {@link PokerPlayer} objects in
+	 * the {@link #players} list take an action. The round ends when all players have folded or matched the last
+	 * bet/raise. Actions taken by the player are output to twitter via the {@link TwitterStream} {@link #twitter}.
+	 * @param minimumBet   The minimum amount that can be bet, or raised.
+	 * @param playerToAct   An {@code int} representing the index of the acting player in the {@link #players} list.
+	 * @param blind   The big blind for the game.
+	 * @return An {@code int} return status (0 for success).
+	 * @see #getAction(PokerPlayer, int, int)
+	 * @see PokerPlayer#action(int, int, int)
+	 */
 	private int betRound(int minimumBet, int playerToAct, int blind){
 		boolean roundFinished = false;	//Round of betting complete
 		int betAmount = minimumBet;		//Amount required to play (total call amount)
@@ -108,7 +129,13 @@ public class RoundOfPoker {
 		return 0;
 	}
 	
-	//Returns a string describing a player's action using the amount of chips they added to the pot
+	/**
+	 * Returns a string describing a player's action using the amount of chips they added to the pot.
+	 * @param player   The {@link PokerPlayer} who acted.
+	 * @param addedChips   The amount of chips added to the pot.
+	 * @param requiredChips   The amount of chips the player needed to call.
+	 * @return A {@link String} describing the action the player took.
+	 */
 	private String getAction(PokerPlayer player, int addedChips, int requiredChips){
 		if(!player.round_active){
 			return "\n" + player.player_name + " folded. ";
@@ -123,6 +150,10 @@ public class RoundOfPoker {
 	}
 	
 	//Complete a round of discarding hands
+	/**
+	 * Complete a round of discarding cards.
+	 * @return A return status (0 for success).
+	 */
 	private int discardRound(){
 		for(int i=0; i<players.size(); i++){
 			if(!players.get(i).round_active) continue;
@@ -142,14 +173,19 @@ public class RoundOfPoker {
 		return 0;
 	}
 	
-	//Reset pot values
+	/**
+	 * Resets the amount of chips each {@link PokerPlayer} object has put in the pot.
+	 */
 	private void clearPersonalBetValues(){
 		for(int i=0; i<players.size(); i++){
 			players.get(i).resetChipsInPot();
 		}
 	}
 	
-	//Check if round is over (one winner)
+	/**
+	 * Checks if a round is over, returning true if there is one active player left.
+	 * @return A {@code boolean}, true if the round is over and false otherwise.
+	 */
 	private boolean roundOver(){
 		int activePlayers = 0;
 		for(int i=0; i<players.size(); i++){
@@ -164,7 +200,12 @@ public class RoundOfPoker {
 		}
 	}
 	
-	//Return last player in play
+	/**
+	 * Gets the last {@link PokerPlayer} object that is still an active player. If
+	 * the round is declared over by {@link #roundOver()}, this player will be the winner.
+	 * @return The last {@link PokerPlayer} object in the {@link #players} list that is still active in the round.
+	 * @see #roundOver()
+	 */
 	private PokerPlayer lastInPlay(){
 		PokerPlayer winner = players.get(0);
 		for(int i=1; i<players.size(); i++){
@@ -175,7 +216,11 @@ public class RoundOfPoker {
 		return winner;
 	}
 	
-	//Return player with best hand
+	/**
+	 * Get the player with the best hand.
+	 * @return The {@link PokerPlayer} who has the highest scoring {@link HandOfCards} object.
+	 * @see HandOfCards#getGameValue()
+	 */
 	private PokerPlayer getWinner(){
 		PokerPlayer winner = null;
 		int winVal = 0;
@@ -190,6 +235,15 @@ public class RoundOfPoker {
 		return winner;
 	}
 	
+	/**
+	 * Completes an entire round of poker. Begins with two players paying the {@link bigBlind} and {@link smallBlind}
+	 * values, then completes a round of betting. If there is no single winner of the round, a discard round takes place,
+	 * followed by a second round of betting. If there is still no single winner, each player's {@link PokerPlayer#hand}
+	 * is compared to declare a winner, which is then returned by the method.
+	 * @return The {@link PokerPlayer} who wins the round.
+	 * @see #betRound(int, int, int)
+	 * @see #discardRound()
+	 */
 	public PokerPlayer startRound() {
 		
 		playerChipsUpdate();
@@ -235,45 +289,22 @@ public class RoundOfPoker {
 		return getWinner();
 	}
 	
+	/**
+	 * Gets the pot (the total amount of winnable chips) for this round.
+	 * @return The {@link #pot} amount.
+	 */
 	public int getPot(){
 		return pot;
 	}
 	
-	public void playerChipsUpdate(){
+	/**
+	 * Outputs a list of each player's current chips using the {@link TwitterStream}, {@link #twitter}.
+	 */
+	private void playerChipsUpdate(){
 		twitter.addToTweet("Current chips:\n");
 		for (int i = 0; i < players.size(); i++) {
 			twitter.addToTweet("-" + players.get(i).player_name + " = " + players.get(i).getChips() +"\n");
 		}
 		twitter.completeMessage();
 	}
-	
-	public static void main(String args[]){
-		DeckOfCards deck = new DeckOfCards();
-		ArrayList<PokerPlayer> players = new ArrayList<PokerPlayer>();
-		players.add(new AutomatedPokerPlayer("Gill", deck));
-		players.add(new AutomatedPokerPlayer("Henry", deck));
-		players.add(new AutomatedPokerPlayer("John", deck));
-		players.add(new AutomatedPokerPlayer("Alice", deck));
-		players.add(new AutomatedPokerPlayer("Sarah", deck));
-		
-		RoundOfPoker round = new RoundOfPoker(deck, players);
-		PokerPlayer p = round.startRound();
-		System.out.println(p.player_name + " - " + p.hand);
-		
-		//Test a number of rounds
-		for(int i=0; i<300; i++){
-			deck.reset();
-			players = new ArrayList<PokerPlayer>();
-			players.add(new AutomatedPokerPlayer("Gill", deck));
-			players.add(new AutomatedPokerPlayer("Henry", deck));
-			players.add(new AutomatedPokerPlayer("John", deck));
-			players.add(new AutomatedPokerPlayer("Alice", deck));
-			players.add(new AutomatedPokerPlayer("Sarah", deck));
-			
-			round = new RoundOfPoker(deck, players);
-			p = round.startRound();
-			System.out.println(p.player_name + " - " + p.hand);
-		}
-	}
-	
 }

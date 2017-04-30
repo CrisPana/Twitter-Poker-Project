@@ -16,12 +16,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 
-/*
- * AutomatedPokerPlayer is a subclass of PokerPlayer 
- * and is the class that is essentially the AI of the project
- * This class makes it own decisions based 
- * on the nature they have acquired
- * */
+/**
+ * An subclass of {@link PokerPlayer} that forms an AI player capable of deciding
+ * its actions with influence of an acquired nature.
+ * @author Dara Callinan
+ * @author Jazheel Luna
+ * @author Eoghan O'Donnell
+ * @author Crischelle Pana
+ */
 public class AutomatedPokerPlayer extends PokerPlayer{
 	
 	static public final int NUMBER_OF_PERSONALITIES = 3;
@@ -44,23 +46,39 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 	static private final int MINIMUM_DISCARD_CHANCE = 0;
 	static private final int MAXIMUM_DISCARD_CHANCE = 100;
 	
-	public int bluffChance;		//bot's tendency to bluff
-	public int betmodifier;		//modifies bot's tendency to raise/call
-	public int foldmodifier;	//not sure if this should be a separate value but we can think about it/change it pretty easily
-	private int discardModifier;//Lower limit for discarding cards (only discard cards that return higher probability)
-	private int inRed;			//Number of remaining big blinds/antes the player is comfortable with
+	/** The chance that the AI will bluff when they have a bad hand. */
+	private int bluffChance;
+	/** The {@link HandOfCards#getDiscardProbability discard probability} that the player will ignore lower values of. */
+	private int discardModifier;
+	/** The amount of big blinds or antes that the player will try to preserve when betting. */
+	private int inRed;
+	/** The upper limit for generating hand values and bets. */
 	private double upperBetModifier = 1.2;
+	/** The lower limit for generating hand values and bets. */
 	private double lowerBetModifier = 1.0;
 	
+	/**
+	 * Class constructor. Calls the {@link PokerPlayer} {@link PokerPlayer#PokerPlayer constructor}
+	 * and generates a random personality for the player.
+	 * @param name
+	 * @param deck   The {@link DeckOfCards deck} of cards being used to deal the player's hand.
+	 * @see #generatePersonality(int) generatePersonality
+	 */
 	AutomatedPokerPlayer(String name, DeckOfCards deck) {
 		super(name, deck);
 		Random rand = new Random();
 		int temp = rand.nextInt(NUMBER_OF_PERSONALITIES);
 		this.generatePersonality(temp);
-		isBot = true;
 	}
 	
 	//Determines a betting value based on a blind/ante as a base value
+	/**
+	 * Determines a betting value for a player's hand. First, the hand is given a value
+	 * in terms of how many big blinds/antes it is worth, then that value is multiplied
+	 * by the blind value in chips.
+	 * @param blind   The big blind.
+	 * @return An {@code int} representing the betting value for the hand.
+	 */
 	private int handBetValue(int blind){
 		int handVal = hand.getGameValue();
 		double mod;
@@ -88,7 +106,19 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		return (int) (blind * mod);
 	}
 	
-	//Returns a bet value using a multiplier for the minimum bet. 
+	/**
+	 * Gets the amount of chips the player is willing to bet in addition to the amount they
+	 * need to call. The final amount is based on a bet multiplier and the minimum bet. The
+	 * number is then influenced by a random value in the range of the player's
+	 * {@link #lowerBetModifier} and {@link #upperBetModifier}. The player will attempt to
+	 * conserve chips if they are nearing bankruptcy, so they can pay blinds for future
+	 * rounds if necessary.
+	 * @param toCall   The amount needed for the player to call the current bet.
+	 * @param minimumBet   The minimum amount that can be bet or raised.
+	 * @param blind   The big blind.
+	 * @param betMult   The minimum bet multiplier to generate a base value.
+	 * @return The amount of chips to be bet.
+	 */
 	private int getBettingChips(int toCall, int minimumBet, int blind, int betMult){
 		int available = getChips() - toCall;		//Available betting chips
 		int minBet = Math.max(minimumBet, blind/2);	//Lowest bet is big blind
@@ -113,7 +143,18 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		}
 	}
 	
-	//Return a value to bet/raise by - can be zero if bluffing a low hand.
+	/**
+	 * Generates a value to bet or raise by if playing a good hand. Depending on the hand value
+	 * and the nature of the player, the player can bet varying amounts to greaten the pot or
+	 * fold players, bluff a low value hand by calling or checking, or try to steal the pot
+	 * with a very large bet.
+	 * @param toCall   The amount of chips needed to call the current bet.
+	 * @param handVal   The value of the player's {@link PokerPlayer#hand hand}.
+	 * @param betAmount   The current total bet amount.
+	 * @param minimumBet   The minimum amount of chips that can be bet or raised.
+	 * @param blind   The big blind.
+	 * @return The amount to bet.
+	 */
 	private int decideBetValue(int toCall, int handVal, int betAmount, int minimumBet, int blind){
 		int available = getChips() - toCall; //Available chips
 		int remainingBlinds = toCall / blind;
@@ -237,32 +278,38 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		return discarded;
 	}
 	
+	/**
+	 * Generates one preset personality for this player by assigning the nature attributes.
+	 * The preset personalities range from very safe players to very aggressive and bluffing players.
+	 * 
+	 * @param t   The {@code int} to determine the personality.
+	 * @see #bluffChance chance to bluff
+	 * @see #discardModifier lower limit for discarding
+	 * @see #inRed amount of big blinds the player tries to preserve
+	 * @see #upperBetModifier the upper limit for betting
+	 * @see #lowerBetModifier the lower limit for betting
+	 */
 	void generatePersonality(int t){
 		switch(t){
 			//strong bluffer
 			case 0:
-				//discardmodifier=-2; 		//not sure how to do this. we could have the discard function do different things
-				//							//for a range of small ints (e.g. -3->3) or just multiply/add/both a value (e.g. add 20)
-				bluffChance = 25 + BASE_BLUFF_CHANCE;		//this could just be the bot's chance to bluff with a bad hand
-				foldmodifier = -1;			//same as the rest. we need to figure out the best way of doing this.	
+				bluffChance = 25 + BASE_BLUFF_CHANCE;	//Chance to bluff
 				discardModifier = 10;		//Lower limit for discarding cards
 				inRed = 1;					//The number of big blinds the player tries to preserve when playing a hand
-				upperBetModifier = 2.5;		//This means the bot would bet between 1 and 1.2 times the expected bet value.
-				lowerBetModifier = 2;
+				upperBetModifier = 2;		//The upper limit for valuing and betting.
+				lowerBetModifier = 1.4;		//The lower limit for valuing and betting
 				break;
 			//bluffer
 			case 1:
-				bluffChance = 10 + BASE_BLUFF_CHANCE;	
-				foldmodifier = -1;				
+				bluffChance = 10 + BASE_BLUFF_CHANCE;				
 				discardModifier = 15;		
 				inRed = 2;					
-				upperBetModifier = 2;		
-				lowerBetModifier = 1.5;
+				upperBetModifier = 1.5;		
+				lowerBetModifier = 1.2;
 				break;
 			//neutral
 			case 2:
-				bluffChance = BASE_BLUFF_CHANCE;		
-				foldmodifier = -1;				
+				bluffChance = BASE_BLUFF_CHANCE;				
 				discardModifier = 20;		
 				inRed = 3;					
 				upperBetModifier = 1.2;		
@@ -270,108 +317,20 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 				break;
 			//safe player
 			case 3:
-				bluffChance = 10;	
-				foldmodifier =  -1;				
+				bluffChance = 10;			
 				discardModifier = 25;		
-				inRed = 4;					
+				inRed = 3;					
 				upperBetModifier = 1.2;		
-				lowerBetModifier = 1;
+				lowerBetModifier = 0.9;
 				break;
 			//very safe player
 			case 4:
-				bluffChance = 0;	
-				foldmodifier = -1;				
+				bluffChance = 5;		
 				discardModifier = 30;		
-				inRed = 5;					
-				upperBetModifier = 1;		
-				lowerBetModifier = 1;
+				inRed = 4;					
+				upperBetModifier = 1.1;		
+				lowerBetModifier = 0.8;
 				break;
 		}
-	}
-	
-	
-	//single blind, no pot, 2 player loop for testing (temporary)
-	public static void main(String args[]){
-		System.out.println("TEST RUN");
-		DeckOfCards deck = new DeckOfCards();
-		AutomatedPokerPlayer bot = new AutomatedPokerPlayer("Yugi", deck);
-		AutomatedPokerPlayer bot2 = new AutomatedPokerPlayer("Kaiba", deck);
-		bot.enterGame(0);
-		int round = 0;
-		while(bot.getChips()>0 && bot2.getChips()>0){
-			bot.round_active = true;
-			bot2.round_active = true;
-			int bet = 10;
-			int min = 10; int blind = 10;
-			
-			round++;
-			//
-			deck.reset();
-			bot.hand = new HandOfCards(deck);
-			bot.round_active = true;
-			bot2.hand = new HandOfCards(deck);
-			bot2.round_active = true;
-			
-			System.out.println(bot.player_name + " " + bot.getChips() + " - " + bot.hand + bot.handBetValue(10));
-			System.out.println(bot2.player_name + " " + bot2.getChips() + " - " + bot2.hand + bot2.handBetValue(10));
-			
-			if(round%2 ==0){
-				System.out.println(bot.player_name + " paid blind.");
-				bot.bet(blind);
-			} else {
-				System.out.println(bot2.player_name + " paid blind.");
-				bot2.bet(blind);
-			}
-			while(bot.round_active && bot2.round_active){
-				//
-				System.out.println("to play: " + bot.player_name + "  bank:" + bot.getChips() + "  bet:" + bet);
-				int call = bet - bot.getChipsInPot();
-				int t = bot.action(bet, min, blind);
-				bet += t - call;
-				min = Math.max(bet-call, min);
-				//
-				if(!bot.round_active || !bot2.round_active){
-					break;
-				}
-				System.out.println("to play: " + bot2.player_name + "  bank:" + bot2.getChips() + "  bet:" + bet);
-				call = bet - bot2.getChipsInPot();
-				t = bot2.action(bet, min, blind);
-				bet += t - call;
-				min = Math.max(bet-call, min);
-				if(bot.getChipsInPot() == bot2.getChipsInPot()){
-					break;
-				}
-			}
-			bot.resetChipsInPot();
-			bot2.resetChipsInPot();
-		}
-		
-		bot = new AutomatedPokerPlayer("Yugi", deck);
-		int bet = bot.getBettingChips(10, 10, 10, LOW_BET);
-		bot.bet(bet);
-		System.out.println(bet);
-		
-		bet = bot.getBettingChips(10, 10, 10, MID_BET);
-		bot.bet(bet);
-		System.out.println(bet);
-		
-		bet = bot.getBettingChips(10, 10, 10, HIGH_BET);
-		bot.bet(bet);
-		System.out.println(bet);
-		
-		bet = bot.getBettingChips(0, 10, 10, HIGH_BET);
-		bot.bet(bet);
-		System.out.println(bet);
-		
-		System.out.println(bot.getChips());
-		
-		deck.reset();
-		bot = new AutomatedPokerPlayer("Yugi", deck);
-		System.out.println("\n" + bot.hand);
-		for(int i=0; i<5; i++){
-			bot.discard();
-			System.out.println("\n" + bot.hand);
-		}
-		System.out.println("\n" + bot.hand);
 	}
 }
