@@ -236,8 +236,9 @@ public class RoundOfPoker {
 	}
 	
 	public void playerChipsUpdate(){
+		twitter.addToTweet("Current chips:\n");
 		for (int i = 0; i < players.size(); i++) {
-			twitter.addToTweet("-" + players.get(i).player_name + "'s current chips = " + players.get(i).getChips() +"\n");
+			twitter.addToTweet("-" + players.get(i).player_name + " = " + players.get(i).getChips() +"\n");
 		}
 		twitter.completeMessage();
 	}

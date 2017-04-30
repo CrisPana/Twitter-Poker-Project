@@ -53,8 +53,9 @@ public class GameOfPoker extends Thread{
 		round = new RoundOfPoker(deck, players);
 	}
 	
-	
-	
+	public Thread getThread(){
+		return t;
+	}
 	
 	public void run() {
       System.out.println("Running " +  threadName );
