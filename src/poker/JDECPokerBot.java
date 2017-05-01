@@ -170,7 +170,7 @@ public class JDECPokerBot {
 	/**
 	 * Checks a string from a status to find if the number of players was specified, and if so
 	 * returns that number. Otherwise returns the {@link #DEFAULT_PLAYERS default amount} of players.
-	 * @param status   The status to check.
+	 * @param str   The {@link String} to check.
 	 * @return An {@code int}, number of players to use.
 	 */
 	private int getNumPlayers(String str){

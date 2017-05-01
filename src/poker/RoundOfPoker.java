@@ -56,6 +56,7 @@ public class RoundOfPoker {
 	 * @param stream   The {@link TwitterStream} to be used for input and output.
 	 * @param bigBlind   The current big blind in the game.
 	 * @param smallBlind   The current small blind in the game.
+	 * @param dealerLocation   The index of the dealer in the {@link #players} list.
 	 */
 	public RoundOfPoker(DeckOfCards deck, ArrayList<PokerPlayer> players, TwitterStream stream, int bigBlind, int smallBlind, int dealerLocation) {
 		this.bigBlind = bigBlind;
