@@ -40,9 +40,9 @@ public class RoundOfPoker {
 	 * 6. Showdown
 	 * */
 	
-	private int smallBlind = 5;
-	private int bigBlind = 10;
-	public int dealerLocation = 0;
+	private int smallBlind;
+	private int bigBlind;
+	public int dealerLocation;
 	public ArrayList<PokerPlayer> players = new ArrayList<PokerPlayer>();
 	private int pot = 0;
 	private TwitterStream twitter;
@@ -57,9 +57,10 @@ public class RoundOfPoker {
 	 * @param bigBlind   The current big blind in the game.
 	 * @param smallBlind   The current small blind in the game.
 	 */
-	public RoundOfPoker(DeckOfCards deck, ArrayList<PokerPlayer> players, TwitterStream stream, int bigBlind, int smallBlind) {
+	public RoundOfPoker(DeckOfCards deck, ArrayList<PokerPlayer> players, TwitterStream stream, int bigBlind, int smallBlind, int dealerLocation) {
 		this.bigBlind = bigBlind;
 		this.smallBlind = smallBlind;
+		this.dealerLocation = dealerLocation;
 		this.players = players;
 		deck.reset();
 		for(int i=0; i<players.size(); i++){
@@ -256,13 +257,14 @@ public class RoundOfPoker {
 		//reply at user his/her cards
 		
 		//PHASE 2 - setting up small and big blinds
-		pot += players.get(dealerLocation+1%players.size()).bet(smallBlind);
-		twitter.addToTweet(players.get(dealerLocation+1%players.size()).getName() + " paid the small blind. ");
-		pot += players.get(dealerLocation+2%players.size()).bet(bigBlind);
-		twitter.addToTweet(players.get(dealerLocation+2%players.size()).getName() + " paid the big blind. ");
+		pot += players.get((dealerLocation+1) % players.size()).bet(smallBlind);
+		twitter.addToTweet(players.get((dealerLocation+1) % players.size()).getName() + " paid the small blind. ");
+		pot += players.get((dealerLocation+2) % players.size()).bet(bigBlind);
+		twitter.addToTweet(players.get((dealerLocation+2) % players.size()).getName() + " paid the big blind. ");
 		
 		//PHASE 3 - Betting Round #1
-		int status = betRound(bigBlind, dealerLocation+3%players.size(), bigBlind);
+		int toAct = (dealerLocation+3)%players.size();
+		int status = betRound(bigBlind, toAct, bigBlind);
 		if (status == -1)	return null;
 		if(roundOver()){
 			return lastInPlay();
@@ -279,7 +281,7 @@ public class RoundOfPoker {
 			twitter.addToTweet("\nRound 2 of betting: ");
 		}
 		
-		status = betRound(0, dealerLocation+3%players.size(), bigBlind);
+		status = betRound(0, toAct, bigBlind);
 		if (status == -1)	return null;
 		if(roundOver()){
 			return lastInPlay();

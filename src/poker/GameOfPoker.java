@@ -32,7 +32,7 @@ import twitter4j.TwitterException;
  */
 public class GameOfPoker extends Thread {
 	
-	private static final int MAX_PLAYERS = 5;
+	private static final int MAX_PLAYERS = 6;
 	private static final int MIN_PLAYERS = 2;
 	static public final int SMALL_BLIND = 5;		//Base small blind
 	static public final int BIG_BLIND = 10;			//Base big blind
@@ -43,6 +43,7 @@ public class GameOfPoker extends Thread {
 	private DeckOfCards deck;
 	private TwitterStream twitter;
 	private int numPlayers;
+	private int dealerPosition = 0;
 	public ArrayList<PokerPlayer> players = new ArrayList<PokerPlayer>();
 	private HumanPokerPlayer human;
 
@@ -137,6 +138,7 @@ public class GameOfPoker extends Thread {
 		for(int i=0; i<players.size(); i++){
 			if(players.get(i).getChips()<=0){
 				players.remove(i);
+				if(i<=dealerPosition) dealerPosition--;
 				i--;
 			}
 		}
@@ -169,7 +171,7 @@ public class GameOfPoker extends Thread {
 		int bigBlind = BIG_BLIND;
 		int smallBlind = SMALL_BLIND;
 		while(getWinner()==null && human.game_active==true && human.getChips()>0){
-			RoundOfPoker round = new RoundOfPoker(deck, players, twitter, bigBlind, smallBlind);
+			RoundOfPoker round = new RoundOfPoker(deck, players, twitter, bigBlind, smallBlind, dealerPosition);
 			PokerPlayer roundWinner = round.startRound();
 			//if human player decides to leave mid-game
 			if (roundWinner == null) break;
@@ -188,6 +190,7 @@ public class GameOfPoker extends Thread {
 			roundCount++;
 			bigBlind = BIG_BLIND * ((roundCount/BLIND_INCREASE) + 1);
 			smallBlind = SMALL_BLIND * ((roundCount/BLIND_INCREASE) + 1);
+			dealerPosition = (dealerPosition + 1) % players.size();
 		}
 		
 		if (getWinner() != null){

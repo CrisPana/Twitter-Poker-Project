@@ -40,6 +40,7 @@ public class JDECPokerBot {
 	
 	private static final int BASE_SCAN_DELAY = 30;		//Search for game every minute
 	private static final int MAX_GAMES = 3;				//Maximum number of simultaneous games
+	private static final int DEFAULT_PLAYERS = 5;		//Default number of players
 	private static final int MAX_ID = 256;
 	
 	Date searchBegin;
@@ -167,6 +168,24 @@ public class JDECPokerBot {
 	}
 	
 	/**
+	 * Checks a string from a status to find if the number of players was specified, and if so
+	 * returns that number. Otherwise returns the {@link #DEFAULT_PLAYERS default amount} of players.
+	 * @param status   The status to check.
+	 * @return An {@code int}, number of players to use.
+	 */
+	private int getNumPlayers(String str){
+		String[] words = str.split("\\s+");
+		//For each word
+		for (int i = 0; i < words.length; i++) {
+			words[i] = words[i].replaceAll("[^\\w]", "");
+			if(words[i].matches("\\d+")){//Is string numeric?
+				return Integer.parseInt(words[i]);
+			}
+		}
+		return DEFAULT_PLAYERS;
+	}
+	
+	/**
 	 * Create a new game of poker with a specified status.
 	 * 
 	 * @param threadName	The {@link Thread} name for the game.
@@ -187,9 +206,10 @@ public class JDECPokerBot {
 		//TwitterStream stream = new TwitterStream(twitter, status, status.getUser(), gameID);
 		LocalStream stream = new LocalStream(twitter, status, status.getUser());
 	    
+		int numPlayers = getNumPlayers(status.getText());
 		GameOfPoker pokerGame = null;
 		try {
-			pokerGame = new GameOfPoker(threadName, stream, 5);
+			pokerGame = new GameOfPoker(threadName, stream, numPlayers);
 		} catch (FileNotFoundException e) {
 			System.out.println("botnames.txt is missing or cannot be read");
 			e.printStackTrace();
@@ -218,6 +238,7 @@ public class JDECPokerBot {
 				activeGames[i] = newGame(threadName, game);
 				games.remove(0);
 				activeGames[i].start();
+				removeUnplayableTweets();
 			}
 		}
 	}
@@ -248,7 +269,7 @@ public class JDECPokerBot {
 	
 		JDECPokerBot bot = new JDECPokerBot();
 		
-		boolean singleGame = true;
+		boolean singleGame = false;
 		if(singleGame){
 			System.out.println("Searching for new game");
 			bot.searchForGame();

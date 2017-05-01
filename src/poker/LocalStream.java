@@ -19,7 +19,7 @@ import twitter4j.User;
 public class LocalStream extends TwitterStream {
 	
 	static private final int CHAR_LIMIT = 134;
-	static private final int BASE_TWEET_DELAY = 0;
+	static private final int BASE_TWEET_DELAY = 5;
 	
 	private String toSend;
 
