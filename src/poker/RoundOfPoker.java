@@ -138,14 +138,14 @@ public class RoundOfPoker {
 	 */
 	private String getAction(PokerPlayer player, int addedChips, int requiredChips){
 		if(!player.round_active){
-			return "\n" + player.player_name + " folded. ";
+			return "\n" + player.getName() + " folded. ";
 		}
 		if(addedChips>requiredChips){
-			if(requiredChips == 0) return player.player_name + " bet " + addedChips + ". ";
-			return "\n" + player.player_name + " raised by " + (addedChips-requiredChips) + ". ";
+			if(requiredChips == 0) return player.getName() + " bet " + addedChips + ". ";
+			return "\n" + player.getName() + " raised by " + (addedChips-requiredChips) + ". ";
 		} else {
-			if(addedChips == 0) return player.player_name + " checked. ";
-			return "\n" + player.player_name + " called. ";
+			if(addedChips == 0) return player.getName() + " checked. ";
+			return "\n" + player.getName() + " called. ";
 		}
 	}
 	
@@ -161,7 +161,7 @@ public class RoundOfPoker {
 			int discarded = players.get(i).discard();
 			if (discarded == -1) return -1;
 			if(twitter!=null){
-				String str = "\n" + players.get(i).player_name + " discarded " + discarded;
+				String str = "\n" + players.get(i).getName() + " discarded " + discarded;
 				if(discarded==1){
 					str += " card. ";
 				} else {
@@ -226,7 +226,7 @@ public class RoundOfPoker {
 		int winVal = 0;
 		for(int i=0; i<players.size(); i++){
 			PokerPlayer p = players.get(i);
-			int handVal = p.hand.getGameValue();
+			int handVal = p.getHand().getGameValue();
 			if(p.round_active && handVal>winVal){
 				winVal = handVal;
 				winner = p;
@@ -257,9 +257,9 @@ public class RoundOfPoker {
 		
 		//PHASE 2 - setting up small and big blinds
 		pot += players.get(dealerLocation+1%players.size()).bet(smallBlind);
-		twitter.addToTweet(players.get(dealerLocation+1%players.size()).player_name + " paid the small blind. ");
+		twitter.addToTweet(players.get(dealerLocation+1%players.size()).getName() + " paid the small blind. ");
 		pot += players.get(dealerLocation+2%players.size()).bet(bigBlind);
-		twitter.addToTweet(players.get(dealerLocation+2%players.size()).player_name + " paid the big blind. ");
+		twitter.addToTweet(players.get(dealerLocation+2%players.size()).getName() + " paid the big blind. ");
 		
 		//PHASE 3 - Betting Round #1
 		int status = betRound(bigBlind, dealerLocation+3%players.size(), bigBlind);
@@ -303,7 +303,7 @@ public class RoundOfPoker {
 	private void playerChipsUpdate(){
 		twitter.addToTweet("Current chips:\n");
 		for (int i = 0; i < players.size(); i++) {
-			twitter.addToTweet("-" + players.get(i).player_name + " = " + players.get(i).getChips() +"\n");
+			twitter.addToTweet("-" + players.get(i).getName() + " = " + players.get(i).getChips() +"\n");
 		}
 		twitter.completeMessage();
 	}

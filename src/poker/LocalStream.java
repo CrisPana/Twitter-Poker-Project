@@ -31,7 +31,7 @@ public class LocalStream extends TwitterStream {
 	 * @param twitterUser   The {@link User} in the conversation.
 	 */
 	LocalStream(Twitter twit, Status status, User twitterUser) {
-		super(twit, status, twitterUser);
+		super(twit, status, twitterUser, 0);
 		toSend = "";
 	}
 

@@ -36,30 +36,35 @@ import twitter4j.User;
  */
 public class TwitterStream {
 	
-	static private final int CHAR_LIMIT = 134;
-	static private final int NUM_TWEETS_TO_CHECK = 20;
-	static private final int BASE_TWEET_DELAY = 15;		//Necessary to avoid rate limiting
-	static private final int RANDOM_TWEET_DELAY = 5;
+	private static final int CHAR_LIMIT = 133;
+	private static final int NUM_TWEETS_TO_CHECK = 20;
+	private static final int BASE_TWEET_DELAY = 15;		//Necessary to avoid rate limiting
+	private static final int RANDOM_TWEET_DELAY = 5;
+	private static final double TIME_OUT_SECONDS = 600;	//Time out user if takes too long to reply
 	
 	private Twitter twitter;
 	protected User user;
 	private Status mostRecent;
 	private String toSend;
+	private String streamID;
 	private String tweetID;
 	
 	/**
 	 * Class constructor. Initialises the {@link #twitter twitter}, {@link #mostRecent most recent status}, and
 	 * {@link #user user} attributes. Sets the {@link #toSend} string to an empty string, and gets a starting
 	 * {@link #tweetID tweet ID}.
-	 * @param twit   The {@link Twitter} object to be used.
+	 * @param twitter   The {@link Twitter} object to be used.
 	 * @param status   The initial {@link Status}.
-	 * @param twitterUser   The {@link User} in the conversation.
+	 * @param user   The {@link User} in the conversation.
+	 * @param streamID   The two character ID of the conversation.
 	 */
-	TwitterStream(Twitter twit, Status status, User twitterUser){
-		twitter = twit;
-		user = twitterUser;
+	TwitterStream(Twitter twitter, Status status, User user, int streamID){
+		this.twitter = twitter;
+		this.user = user;
 		mostRecent = status;
 		toSend = "";
+		this.streamID = String.format("%02X", streamID);
+		if(streamID>255) this.streamID = this.streamID.substring(1, this.streamID.length());
 		tweetID = "00";
 	}
 	
@@ -72,7 +77,7 @@ public class TwitterStream {
 	 * @see #sendTweet(String)
 	 */
 	public void addToTweet(String string){
-		if(string.length()>140) string = string.substring(0, CHAR_LIMIT);
+		if(string.length()>CHAR_LIMIT) string = string.substring(0, CHAR_LIMIT);
 		String temp = toSend + string;
 		if(temp.length() > CHAR_LIMIT){
 			try {
@@ -107,9 +112,10 @@ public class TwitterStream {
 	
 	//TweetIdentifier to avoid duplicates
 	private void updateTweetID(){
-		int id = Integer.parseInt(tweetID);
+		int id = Integer.parseInt(tweetID, 16);
 		id++;
-		tweetID = String.format("%02d", id);
+		if(id>255) id = 0;
+		tweetID = String.format("%02X", id);
 	}
 	
 	/**
@@ -119,7 +125,7 @@ public class TwitterStream {
 	 * @throws InterruptedException   If thread is interrupted.
 	 */
 	private synchronized void sendTweet(String str) throws TwitterException, InterruptedException {
-    	StatusUpdate statusUpdate = new StatusUpdate("[" + tweetID + "] " + str);
+    	StatusUpdate statusUpdate = new StatusUpdate("[" + streamID + tweetID + "] " + str);
     	updateTweetID();
     	//statusUpdate.inReplyToStatusId(mostRecent.getId());	//Replies potentially causing api restriction?
     	mostRecent = tweetStatus(twitter, statusUpdate);
@@ -157,8 +163,11 @@ public class TwitterStream {
 	 */
 	public String parseResponse() throws TwitterException, InterruptedException{
 		Status response = null;
+		double counter = 0;
 		while(response == null){
 			response = getRecentReply();
+			counter += BASE_TWEET_DELAY + (RANDOM_TWEET_DELAY/2);
+			if(counter>TIME_OUT_SECONDS) return "leave";
 		}
 		return response.getText();
 	}
@@ -196,5 +205,13 @@ public class TwitterStream {
 		int delay = BASE_TWEET_DELAY + rand.nextInt(RANDOM_TWEET_DELAY);
 		Thread.sleep(delay*1000);
 		return tw.getUserTimeline(user, paging);
+	}
+	
+	public static void main(String[] args) {
+		TwitterStream s = new TwitterStream(null, null, null, 40);
+		for(int i=0; i<260; i++){
+			s.updateTweetID();
+			System.out.println(s.streamID+s.tweetID);
+		}
 	}
 }

@@ -111,7 +111,7 @@ public class GameOfPoker extends Thread {
 			//Skip duplicate names
 			boolean duplicate = false;
 			for(int j=0; j<players.size(); j++){
-				if(line.equals(players.get(j).player_name)) duplicate = true;
+				if(line.equals(players.get(j).getName())) duplicate = true;
 			}
 			if(duplicate) continue;
 			//Chance to update name
@@ -163,7 +163,7 @@ public class GameOfPoker extends Thread {
 	 * @see RoundOfPoker
 	 */
 	private void startGame(){
-		twitter.addToTweet("Starting " + numPlayers + " player game with " + human.player_name + ".\n");
+		twitter.addToTweet("Starting " + numPlayers + " player game with " + human.getName() + ".\n");
 		
 		while(getWinner()==null && human.game_active==true && human.getChips()>0){
 			RoundOfPoker round = new RoundOfPoker(deck, players, twitter, BIG_BLIND, SMALL_BLIND);
@@ -172,12 +172,12 @@ public class GameOfPoker extends Thread {
 			if (roundWinner == null) break;
 			int pot = round.getPot();
 			roundWinner.addChips(round.getPot());
-			twitter.addToTweet("\n" + roundWinner.player_name + " won " + pot + " chips! ");
+			twitter.addToTweet("\n" + roundWinner.getName() + " won " + pot + " chips! ");
 			
 			//display players' cards who have not folded
 			for(int i = 0; i < players.size(); i++){
 				if (players.get(i).round_active != false){
-					twitter.addToTweet("\n" + players.get(i).player_name + "'s cards: " + players.get(i).hand.toString());
+					twitter.addToTweet("\n" + players.get(i).getName() + "'s cards: " + players.get(i).getHand().toString());
 				}
 			}
 			twitter.completeMessage();
@@ -187,9 +187,9 @@ public class GameOfPoker extends Thread {
 		if (getWinner() != null){
 			twitter.addToTweet(getWinner() + " won the game! ");
 		} else if(human.getChips() == 0){
-			twitter.addToTweet(human.player_name + " is bankrupt! ");
+			twitter.addToTweet(human.getName() + " is bankrupt! ");
 		} else {
-			twitter.addToTweet(human.player_name + " has left the game.");
+			twitter.addToTweet(human.getName() + " has left the game.");
 		}
 		twitter.completeMessage();
 		

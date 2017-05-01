@@ -26,25 +26,25 @@ import java.util.Random;
  */
 public class AutomatedPokerPlayer extends PokerPlayer{
 	
-	static public final int NUMBER_OF_PERSONALITIES = 3;
-	static private final int LOW_BET = 1;			//Standard low bet multiplier (1 times the minimum bet)
-	static private final int MID_BET = 2;			//Standard mid bet multiplier
-	static private final int HIGH_BET = 4;			//Standard high bet multiplier
-	static private final int STEAL_POT_CHANCE = 25;	//Chance to attempt to steal a pot (high bet) with a good hand
-	static private final int BASE_BLUFF_CHANCE = 25;//Base chance for player to bluff
+	private static final int NUMBER_OF_PERSONALITIES = 5;
+	private static final int LOW_BET = 1;			//Standard low bet multiplier (1 times the minimum bet)
+	private static final int MID_BET = 2;			//Standard mid bet multiplier
+	private static final int HIGH_BET = 4;			//Standard high bet multiplier
+	private static final int STEAL_POT_CHANCE = 25;	//Chance to attempt to steal a pot (high bet) with a good hand
+	private static final int BASE_BLUFF_CHANCE = 25;//Base chance for player to bluff
 	//Blind/Ante/Round values for playable hands (a good high hand is worth a big blind)
-	static private final double LOW_HIGH_HAND_BLIND_VALUE = 0.5;
-	static private final double HIGH_HAND_BLIND_VALUE = 1;
-	static private final double LOW_PAIR_BLIND_VALUE = 1.2;
-	static private final double HIGH_PAIR_BLIND_VALUE = 1.6;
-	static private final double TWO_PAIR_BLIND_VALUE = 2;
-	static private final double SET_BLIND_VALUE = 4;
-	static private final double MIDDLE_BLIND_VALUE = 6;
-	static private final double TOP_BLIND_VALUE = 20;
+	private static final double LOW_HIGH_HAND_BLIND_VALUE = 0.5;
+	private static final double HIGH_HAND_BLIND_VALUE = 1;
+	private static final double LOW_PAIR_BLIND_VALUE = 1.2;
+	private static final double HIGH_PAIR_BLIND_VALUE = 1.6;
+	private static final double TWO_PAIR_BLIND_VALUE = 2;
+	private static final double SET_BLIND_VALUE = 4;
+	private static final double MIDDLE_BLIND_VALUE = 6;
+	private static final double TOP_BLIND_VALUE = 20;
 	//Discard Values
-	static public final int MAX_DISCARD = 3;
-	static private final int MINIMUM_DISCARD_CHANCE = 0;
-	static private final int MAXIMUM_DISCARD_CHANCE = 100;
+	private static final int MAX_DISCARD = 3;
+	private static final int MINIMUM_DISCARD_CHANCE = 0;
+	private static final int MAXIMUM_DISCARD_CHANCE = 100;
 	
 	/** The chance that the AI will bluff when they have a bad hand. */
 	private int bluffChance;
@@ -71,7 +71,6 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		this.generatePersonality(temp);
 	}
 	
-	//Determines a betting value based on a blind/ante as a base value
 	/**
 	 * Determines a betting value for a player's hand. First, the hand is given a value
 	 * in terms of how many big blinds/antes it is worth, then that value is multiplied
@@ -80,7 +79,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 	 * @return An {@code int} representing the betting value for the hand.
 	 */
 	private int handBetValue(int blind){
-		int handVal = hand.getGameValue();
+		int handVal = getHand().getGameValue();
 		double mod;
 		if(handVal<HandOfCards.ONE_PAIR_DEFAULT){ //High hand
 			if(handVal < (11*HandOfCards.FOURTEEN_FOURTH)){ //No face cards
@@ -255,7 +254,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		//Discard cards, but no more than MAX_DISCARD (3)
 		ArrayList<Integer> toDiscard = new ArrayList<Integer>();
 		for(int i=0; i<HandOfCards.HAND_SIZE; i++){
-			int discardProb = hand.getDiscardProbability(i);
+			int discardProb = getHand().getDiscardProbability(i);
 			//Discard if random < probability
 			if(random<discardProb){
 				if(discarded>=MAX_DISCARD){
@@ -272,7 +271,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 		for(int i=0; i<toDiscard.size() && i<MAX_DISCARD; i++){
 			discardArray[i] = toDiscard.get(i);
 		}
-		hand.discard(discardArray, discarded);
+		getHand().discard(discardArray, discarded);
 		
 		//Return amount of cards discarded
 		return discarded;
@@ -324,7 +323,7 @@ public class AutomatedPokerPlayer extends PokerPlayer{
 				lowerBetModifier = 0.9;
 				break;
 			//very safe player
-			case 4:
+			default:
 				bluffChance = BASE_BLUFF_CHANCE - 15;		
 				discardModifier = 30;		
 				inRed = 4;					

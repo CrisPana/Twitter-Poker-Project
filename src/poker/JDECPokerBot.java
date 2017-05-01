@@ -14,12 +14,15 @@ package poker;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import twitter4j.*;
 import twitter4j.conf.ConfigurationBuilder;
@@ -35,8 +38,9 @@ import twitter4j.conf.ConfigurationBuilder;
  */
 public class JDECPokerBot {
 	
-	static private final int BASE_SCAN_DELAY = 30;		//Search for game every minute
-	static private final int MAX_GAMES = 3;				//Maximum number of simultaneous games
+	private static final int BASE_SCAN_DELAY = 30;		//Search for game every minute
+	private static final int MAX_GAMES = 3;				//Maximum number of simultaneous games
+	private static final int MAX_ID = 256;
 	
 	Date searchBegin;
 	Twitter twitter;
@@ -44,6 +48,13 @@ public class JDECPokerBot {
 	List<String> playing;
 	GameOfPoker[] activeGames;
 
+	/**
+	 * Class constructor. Initialises the {@link #playing} list, {@link #activeGames} array and {@link #searchBegin} date.
+	 * Reads Twitter API keys from keys file, and connects to the Twitter API.
+	 * @throws TwitterException   If API request is denied.
+	 * @throws FileNotFoundException   If keys file cannot be found.
+	 * @throws IOException   If I/O operations fail or are interrupted.
+	 */
 	public JDECPokerBot() throws TwitterException, FileNotFoundException, IOException {
 		searchBegin = new Date();
 		playing = new ArrayList<String>();
@@ -71,6 +82,13 @@ public class JDECPokerBot {
 		
 		TwitterFactory tf = new TwitterFactory(cb.build());
 		twitter = tf.getInstance();
+	}
+	
+	/**
+	 * Update the oldest status date for searching.
+	 */
+	public void updateSearchDate(){
+		searchBegin = new Date();
 	}
 
 	/**
@@ -130,6 +148,29 @@ public class JDECPokerBot {
 	}
 	
 	/**
+	 * Gets an ID for a game from the properties file. This is used to avoid duplicate tweets.
+	 * @return An {@code int} ID number.
+	 * @throws IOException   If there is a failed or interrupted I/O operation.
+	 */
+	private int getGameID() throws IOException{
+		Properties prop = new Properties();
+		int id;
+	    try {
+			prop.load(new FileInputStream("Game.properties"));
+			id = Integer.parseInt(prop.getProperty("nextGameID"));
+		} catch (FileNotFoundException e) {
+			prop.setProperty("nextGameID", "0");
+		    prop.store(new FileOutputStream("Game.properties"), null);
+			id = 0;
+		}
+		int newID = (id + 1) % MAX_ID;
+		String nextID = String.valueOf(newID);
+		prop.setProperty("nextGameID", nextID);
+		prop.store(new FileOutputStream("Game.properties"), null);
+		return id;
+	}
+	
+	/**
 	 * Create a new game of poker with a specified status.
 	 * 
 	 * @param threadName	The {@link Thread} name for the game.
@@ -138,12 +179,18 @@ public class JDECPokerBot {
 	 * @throws TwitterException   If Twitter request is denied
 	 */
 	private GameOfPoker newGame(String threadName, Status status) throws TwitterException {
+		//Get a unique game ID
+		int gameID;
+		try {
+			gameID = getGameID();
+		} catch (IOException e1) {
+			return null;
+		}
 		
 		//** Use twitter stream for twitter input/output or local stream for console input/output
-		//TwitterStream stream = new TwitterStream(twitter, game, game.getUser());
-		LocalStream stream = new LocalStream(twitter, status, status.getUser());
+		TwitterStream stream = new TwitterStream(twitter, status, status.getUser(), gameID);
+		//LocalStream stream = new LocalStream(twitter, status, status.getUser());
 	    
-		//Thread.sleep(BASE_TWEET_DELAY*1000);
 		GameOfPoker pokerGame = null;
 		try {
 			pokerGame = new GameOfPoker(threadName, stream, 5);
@@ -187,14 +234,21 @@ public class JDECPokerBot {
 		//Set finished games to null
 		for(int i=0; i<MAX_GAMES; i++){
 			if(activeGames[i]!=null && activeGames[i].getThread().getState()==Thread.State.TERMINATED){
-				playing.remove(activeGames[i].getHumanPlayer().player_name);
+				playing.remove(activeGames[i].getHumanPlayer().getName());
 				activeGames[i] = null;
 			}
 		}
 	}
 	
-    //if something goes wrong, we might see a TwitterException
-	public static void main(String... args) throws TwitterException, InterruptedException, FileNotFoundException, IOException{
+    /**
+     * Main method for executing the poker bot.
+     * @param args   Arguments.
+     * @throws TwitterException   If API request is denied.
+     * @throws FileNotFoundException   If a file is not found.
+     * @throws IOException   If I/O operations fail or are interrupted.
+     * @throws InterruptedException   If a thread is interrupted.
+     */
+	public static void main(String... args) throws FileNotFoundException, TwitterException, IOException, InterruptedException {
 	
 		JDECPokerBot bot = new JDECPokerBot();
 		
@@ -203,7 +257,7 @@ public class JDECPokerBot {
 			System.out.println("Searching for new game");
 			bot.searchForGame();
 	    	bot.newGame("Thread 1", bot.games.get(0)).start();
-	    	bot.searchBegin = new Date();
+	    	bot.updateSearchDate();
 	    	return;
 		}
 		

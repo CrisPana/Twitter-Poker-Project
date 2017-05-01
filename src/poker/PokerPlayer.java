@@ -21,12 +21,12 @@ package poker;
  */
 abstract class PokerPlayer {
 	
-	public String player_name;
+	private String player_name;
 	private int chips = 100;
-	protected int chipsInPot = 0;
+	private int chipsInPot = 0;
 	protected boolean round_active = false;
 	protected boolean game_active = false;
-	protected HandOfCards hand;
+	private HandOfCards hand;
 
 	/**
 	 * Class constructor. Initialises the player's name and initialises their {@link #hand} by dealing
@@ -49,6 +49,14 @@ abstract class PokerPlayer {
 		chips -= ch;
 		chipsInPot += ch;
 		return ch;
+	}
+	
+	/**
+	 * Gets the player's name.
+	 * @return The player's {@link #player_name name}.
+	 */
+	public String getName(){
+		return player_name;
 	}
 	
 	/**
@@ -88,6 +96,14 @@ abstract class PokerPlayer {
 	 */
 	public void resetHand(DeckOfCards deck){
 		hand = new HandOfCards(deck);
+	}
+	
+	/**
+	 * Gets the player's {@link HandOfCards} {@link #hand attribute}.
+	 * @return The player's {@link #hand hand}.
+	 */
+	public HandOfCards getHand(){
+		return hand;
 	}
 	
 	public String toString(){
