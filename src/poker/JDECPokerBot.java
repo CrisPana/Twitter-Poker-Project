@@ -142,8 +142,8 @@ public class JDECPokerBot {
 			if(removed) continue;
 			Date created = games.get(i).getCreatedAt();
 			if(created.before(searchBegin)){
-				//games.remove(i);
-				//i = i-1;
+				games.remove(i);
+				i = i-1;
 			}
 		}
 	}
