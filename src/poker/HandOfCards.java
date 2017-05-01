@@ -475,14 +475,10 @@ public class HandOfCards {
 
 		// returns straight default + value of high card
 		else if (isStraight()) {
-			if (hand.get(0).getGameValue() == 14 && hand.get(2).getGameValue() == 5)
-				return STRAIGHT_DEFAULT + hand.get(1).getGameValue() * FOURTEEN_FOURTH
-						+ hand.get(2).getGameValue() * FOURTEEN_THIRD + hand.get(3).getGameValue() * FOURTEEN_SECOND
-						+ hand.get(4).getGameValue() * FOURTEEN_FIRST + hand.get(0).getGameValue();
+			if (hand.get(0).getGameValue() == 14 && hand.get(1).getGameValue() == 5)
+				return STRAIGHT_DEFAULT + 5;
 			else
-				return STRAIGHT_DEFAULT + hand.get(0).getGameValue() * FOURTEEN_FOURTH
-						+ hand.get(1).getGameValue() * FOURTEEN_THIRD + hand.get(2).getGameValue() * FOURTEEN_SECOND
-						+ hand.get(3).getGameValue() * FOURTEEN_FIRST + hand.get(4).getGameValue();
+				return STRAIGHT_DEFAULT + hand.get(0).getGameValue();
 		}
 
 		// returns three of a kind default + value of three
