@@ -110,7 +110,9 @@ public class TwitterStream {
 		}
 	}
 	
-	//TweetIdentifier to avoid duplicates
+	/**
+	 * Increments the {@link #tweetID tweet ID}.
+	 */
 	private void updateTweetID(){
 		int id = Integer.parseInt(tweetID, 16);
 		id++;
@@ -205,13 +207,5 @@ public class TwitterStream {
 		int delay = BASE_TWEET_DELAY + rand.nextInt(RANDOM_TWEET_DELAY);
 		Thread.sleep(delay*1000);
 		return tw.getUserTimeline(user, paging);
-	}
-	
-	public static void main(String[] args) {
-		TwitterStream s = new TwitterStream(null, null, null, 40);
-		for(int i=0; i<260; i++){
-			s.updateTweetID();
-			System.out.println(s.streamID+s.tweetID);
-		}
 	}
 }

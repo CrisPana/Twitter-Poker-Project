@@ -14,7 +14,6 @@ package poker;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -35,8 +34,9 @@ public class GameOfPoker extends Thread {
 	
 	private static final int MAX_PLAYERS = 5;
 	private static final int MIN_PLAYERS = 2;
-	static public final int SMALL_BLIND = 5;
-	static public final int BIG_BLIND = 10;
+	static public final int SMALL_BLIND = 5;		//Base small blind
+	static public final int BIG_BLIND = 10;			//Base big blind
+	private static final int BLIND_INCREASE = 10;	//Amount of rounds blinds will increase after (blinds increase every 10 rounds)
 
 	private Thread t;
 	private String threadName;
@@ -165,8 +165,11 @@ public class GameOfPoker extends Thread {
 	private void startGame(){
 		twitter.addToTweet("Starting " + numPlayers + " player game with " + human.getName() + ".\n");
 		
+		int roundCount = 0;
+		int bigBlind = BIG_BLIND;
+		int smallBlind = SMALL_BLIND;
 		while(getWinner()==null && human.game_active==true && human.getChips()>0){
-			RoundOfPoker round = new RoundOfPoker(deck, players, twitter, BIG_BLIND, SMALL_BLIND);
+			RoundOfPoker round = new RoundOfPoker(deck, players, twitter, bigBlind, smallBlind);
 			PokerPlayer roundWinner = round.startRound();
 			//if human player decides to leave mid-game
 			if (roundWinner == null) break;
@@ -182,29 +185,19 @@ public class GameOfPoker extends Thread {
 			}
 			twitter.completeMessage();
 			removeBankruptPlayers();
+			roundCount++;
+			bigBlind = BIG_BLIND * ((roundCount/BLIND_INCREASE) + 1);
+			smallBlind = SMALL_BLIND * ((roundCount/BLIND_INCREASE) + 1);
 		}
 		
 		if (getWinner() != null){
-			twitter.addToTweet(getWinner() + " won the game! ");
+			twitter.addToTweet(getWinner().getName() + " won the game! ");
 		} else if(human.getChips() == 0){
 			twitter.addToTweet(human.getName() + " is bankrupt! ");
 		} else {
 			twitter.addToTweet(human.getName() + " has left the game.");
 		}
 		twitter.completeMessage();
-		
-	}
-	
-	public static void main(String[] args) throws TwitterException, InterruptedException, FileNotFoundException, IOException {
-		
-		
-		LocalStream str1 = new LocalStream(null, null, null);
-		LocalStream str2 = new LocalStream(null, null, null);
-		GameOfPoker game1 = new GameOfPoker("thread1", str1, 5);
-		GameOfPoker game2 = new GameOfPoker("thread1", str2, 5);
-		
-		game1.start();
-		game2.start();
 		
 	}
 }

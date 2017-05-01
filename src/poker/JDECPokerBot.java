@@ -100,15 +100,11 @@ public class JDECPokerBot {
 	 */
 	public int searchForGame() throws TwitterException, InterruptedException {
 		games = null;
-		//Until a game is found
-		//while(games == null || games.size()<1){
 		Query query = new Query("#PlayPokerWithJDEC");
 		QueryResult result = twitter.search(query);
 		games = result.getTweets();
 		//Remove tweets
 		removeUnplayableTweets();
-		//if(games.size()<1) Thread.sleep(BASE_SCAN_DELAY*1000);
-		//}
 		return games.size();
 	}
 	
@@ -188,8 +184,8 @@ public class JDECPokerBot {
 		}
 		
 		//** Use twitter stream for twitter input/output or local stream for console input/output
-		TwitterStream stream = new TwitterStream(twitter, status, status.getUser(), gameID);
-		//LocalStream stream = new LocalStream(twitter, status, status.getUser());
+		//TwitterStream stream = new TwitterStream(twitter, status, status.getUser(), gameID);
+		LocalStream stream = new LocalStream(twitter, status, status.getUser());
 	    
 		GameOfPoker pokerGame = null;
 		try {
@@ -265,6 +261,7 @@ public class JDECPokerBot {
 			bot.searchForGame();
 			bot.clearCompletedGames();
 			bot.createGames();
+			bot.updateSearchDate();
 			Thread.sleep(BASE_SCAN_DELAY*1000);
 		}
 	}
