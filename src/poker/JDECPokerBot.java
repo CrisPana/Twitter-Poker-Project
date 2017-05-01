@@ -96,14 +96,18 @@ public class JDECPokerBot {
 	 * Searches for statuses with the 'join game' string.
 	 * 
 	 * @return <code>int</code> - the amount of games found
-	 * @throws TwitterException   If Twitter request is denied
-	 * @throws InterruptedException   If a {@link GameOfPoker} thread is interrupted
 	 */
-	public int searchForGame() throws TwitterException, InterruptedException {
+	public int searchForGame() {
 		games = null;
 		Query query = new Query("#PlayPokerWithJDEC");
-		QueryResult result = twitter.search(query);
-		games = result.getTweets();
+		QueryResult result = null;
+		try {
+			result = twitter.search(query);
+			games = result.getTweets();
+		} catch (TwitterException e) {
+			System.out.println("Could not search for tweets due to a TwitterException.");
+			e.printStackTrace();
+		}
 		//Remove tweets
 		removeUnplayableTweets();
 		return games.size();
@@ -138,8 +142,8 @@ public class JDECPokerBot {
 			if(removed) continue;
 			Date created = games.get(i).getCreatedAt();
 			if(created.before(searchBegin)){
-				games.remove(i);
-				i = i-1;
+				//games.remove(i);
+				//i = i-1;
 			}
 		}
 	}
@@ -227,15 +231,20 @@ public class JDECPokerBot {
 	/**
 	 * Creates and runs up to {@link #MAX_GAMES} {@link GameOfPoker} objects but will not
 	 * replace any currently running games in {@link #activeGames}.
-	 * @throws TwitterException   If Twitter request is denied
 	 */
-	public void createGames() throws TwitterException{
+	public void createGames() {
 		//Create and run games
 		for(int i=0; i<MAX_GAMES; i++){
 			if(activeGames[i]==null && games.size()>0){
 				String threadName = "Thread " + (i+1);
 				Status game = games.get(0);
-				activeGames[i] = newGame(threadName, game);
+				try {
+					activeGames[i] = newGame(threadName, game);
+				} catch (TwitterException e) {
+					System.out.println("Could not create game due to a TwitterException.");
+					e.printStackTrace();
+					continue;
+				}
 				games.remove(0);
 				activeGames[i].start();
 				removeUnplayableTweets();
@@ -260,21 +269,29 @@ public class JDECPokerBot {
     /**
      * Main method for executing the poker bot.
      * @param args   Arguments.
-     * @throws TwitterException   If API request is denied.
-     * @throws FileNotFoundException   If a file is not found.
-     * @throws IOException   If I/O operations fail or are interrupted.
-     * @throws InterruptedException   If a thread is interrupted.
      */
-	public static void main(String... args) throws FileNotFoundException, TwitterException, IOException, InterruptedException {
+	public static void main(String... args) {
 	
-		JDECPokerBot bot = new JDECPokerBot();
+		JDECPokerBot bot = null;
+		try {
+			bot = new JDECPokerBot();
+		} catch (TwitterException | IOException e) {
+			System.out.println("Could not initialise poker bot.");
+			e.printStackTrace();
+			return;
+		}
 		
 		while(true){
 			System.out.println("Searching for new game");
 			if(bot.searchForGame()>0) bot.updateSearchDate();
 			bot.clearCompletedGames();
 			bot.createGames();
-			Thread.sleep(BASE_SCAN_DELAY*1000);
+			try {
+				Thread.sleep(BASE_SCAN_DELAY*1000);
+			} catch (InterruptedException e) {
+				System.out.println("Thread was interrupted.");
+				e.printStackTrace();
+			}
 		}
 	}
 }
