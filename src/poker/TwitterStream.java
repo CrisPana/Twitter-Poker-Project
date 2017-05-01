@@ -38,7 +38,7 @@ public class TwitterStream {
 	
 	private static final int CHAR_LIMIT = 133;
 	private static final int NUM_TWEETS_TO_CHECK = 20;
-	private static final int BASE_TWEET_DELAY = 15;		//Necessary to avoid rate limiting
+	private static final int BASE_TWEET_DELAY = 10;		//Necessary to avoid rate limiting
 	private static final int RANDOM_TWEET_DELAY = 5;
 	private static final double TIME_OUT_SECONDS = 600;	//Time out user if takes too long to reply
 	
@@ -129,7 +129,7 @@ public class TwitterStream {
 	private synchronized void sendTweet(String str) throws TwitterException, InterruptedException {
     	StatusUpdate statusUpdate = new StatusUpdate("[" + streamID + tweetID + "] " + str);
     	updateTweetID();
-    	//statusUpdate.inReplyToStatusId(mostRecent.getId());	//Replies potentially causing api restriction?
+    	statusUpdate.inReplyToStatusId(mostRecent.getId());
     	mostRecent = tweetStatus(twitter, statusUpdate);
 	}
 	
@@ -149,7 +149,7 @@ public class TwitterStream {
 		//Check if any status is a reply to latest tweet
 		for(int i = 0; i<statuses.size(); i++){
 			if(statuses.get(i).getInReplyToStatusId()==mostRecent.getId()){
-				mostRecent = statuses.get(i);
+				//mostRecent = statuses.get(i);	//Can be used to reply to user if '@'s are used but risks application suspension
 				return statuses.get(i);
 			}
 		}

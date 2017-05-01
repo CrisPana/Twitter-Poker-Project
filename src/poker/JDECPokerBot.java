@@ -138,8 +138,8 @@ public class JDECPokerBot {
 			if(removed) continue;
 			Date created = games.get(i).getCreatedAt();
 			if(created.before(searchBegin)){
-				//games.remove(i);
-				//i = i-1;
+				games.remove(i);
+				i = i-1;
 			}
 		}
 	}
@@ -203,8 +203,8 @@ public class JDECPokerBot {
 		}
 		
 		//** Use twitter stream for twitter input/output or local stream for console input/output
-		//TwitterStream stream = new TwitterStream(twitter, status, status.getUser(), gameID);
-		LocalStream stream = new LocalStream(twitter, status, status.getUser());
+		TwitterStream stream = new TwitterStream(twitter, status, status.getUser(), gameID);
+		//LocalStream stream = new LocalStream(twitter, status, status.getUser());
 	    
 		int numPlayers = getNumPlayers(status.getText());
 		GameOfPoker pokerGame = null;
@@ -269,20 +269,11 @@ public class JDECPokerBot {
 	
 		JDECPokerBot bot = new JDECPokerBot();
 		
-		boolean singleGame = false;
-		if(singleGame){
+		while(true){
 			System.out.println("Searching for new game");
-			bot.searchForGame();
-	    	bot.newGame("Thread 1", bot.games.get(0)).start();
-	    	bot.updateSearchDate();
-	    	return;
-		}
-		
-		while(!singleGame){
-			bot.searchForGame();
+			if(bot.searchForGame()>0) bot.updateSearchDate();
 			bot.clearCompletedGames();
 			bot.createGames();
-			bot.updateSearchDate();
 			Thread.sleep(BASE_SCAN_DELAY*1000);
 		}
 	}
